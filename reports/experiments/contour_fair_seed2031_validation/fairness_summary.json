@@ -1,0 +1,92 @@
+{
+  "status": "not established",
+  "reason": "Skin-tone subgroup estimates are descriptive only. Groups are uneven, some lack both outcome classes, and no prospective fairness study was run.",
+  "reported_groups": [
+    {
+      "skin_tone_class": "1.0",
+      "images": 26,
+      "higher_concern_images": 23,
+      "lower_concern_images": 3,
+      "status": "insufficient data"
+    },
+    {
+      "skin_tone_class": "2.0",
+      "images": 154,
+      "higher_concern_images": 102,
+      "lower_concern_images": 52,
+      "status": "descriptive only",
+      "accuracy": 0.6948051948051948,
+      "balanced_accuracy": 0.5575037707390649,
+      "sensitivity": 0.9803921568627451,
+      "specificity": 0.1346153846153846,
+      "precision": 0.6896551724137931,
+      "f1": 0.8097165991902834,
+      "tn": 7,
+      "fp": 45,
+      "fn": 2,
+      "tp": 100,
+      "roc_auc": 0.8244720965309201
+    },
+    {
+      "skin_tone_class": "3.0",
+      "images": 335,
+      "higher_concern_images": 247,
+      "lower_concern_images": 88,
+      "status": "descriptive only",
+      "accuracy": 0.7522388059701492,
+      "balanced_accuracy": 0.5357241442767758,
+      "sensitivity": 0.9919028340080972,
+      "specificity": 0.07954545454545454,
+      "precision": 0.7515337423312883,
+      "f1": 0.8551483420593369,
+      "tn": 7,
+      "fp": 81,
+      "fn": 2,
+      "tp": 245,
+      "roc_auc": 0.8064041221935959
+    },
+    {
+      "skin_tone_class": "4.0",
+      "images": 117,
+      "higher_concern_images": 83,
+      "lower_concern_images": 34,
+      "status": "descriptive only",
+      "accuracy": 0.7435897435897436,
+      "balanced_accuracy": 0.5588235294117647,
+      "sensitivity": 1.0,
+      "specificity": 0.11764705882352941,
+      "precision": 0.7345132743362832,
+      "f1": 0.8469387755102041,
+      "tn": 4,
+      "fp": 30,
+      "fn": 0,
+      "tp": 83,
+      "roc_auc": 0.9011339475549256
+    },
+    {
+      "skin_tone_class": "5.0",
+      "images": 41,
+      "higher_concern_images": 31,
+      "lower_concern_images": 10,
+      "status": "descriptive only",
+      "accuracy": 0.7560975609756098,
+      "balanced_accuracy": 0.5338709677419355,
+      "sensitivity": 0.967741935483871,
+      "specificity": 0.1,
+      "precision": 0.7692307692307693,
+      "f1": 0.8571428571428571,
+      "tn": 1,
+      "fp": 9,
+      "fn": 1,
+      "tp": 30,
+      "roc_auc": 0.7709677419354839
+    },
+    {
+      "skin_tone_class": "missing",
+      "images": 10,
+      "higher_concern_images": 0,
+      "lower_concern_images": 10,
+      "status": "insufficient data"
+    }
+  ]
+}

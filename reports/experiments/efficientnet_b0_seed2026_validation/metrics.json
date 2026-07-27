@@ -1,0 +1,19 @@
+{
+  "accuracy": 0.7309160305343512,
+  "balanced_accuracy": 0.5769120184013801,
+  "sensitivity": 0.9308510638297872,
+  "specificity": 0.22297297297297297,
+  "precision": 0.7526881720430108,
+  "f1": 0.8323424494649228,
+  "tn": 33,
+  "fp": 115,
+  "fn": 26,
+  "tp": 350,
+  "roc_auc": 0.8178191489361704,
+  "threshold_higher_concern": 0.5795203560590744,
+  "threshold_melanoma": 0.24736703991889955,
+  "melanoma_images": 44,
+  "melanoma_sensitivity": 0.9090909090909091,
+  "melanoma_head_roc_auc": 0.8792613636363635,
+  "decision_margin_roc_auc": 0.6953529327199541
+}

@@ -1,0 +1,962 @@
+[
+  {
+    "epoch": 1,
+    "train_loss": 0.3269890864001642,
+    "val_loss": 0.5395669500033061,
+    "selection_objective": 0.837111449682278,
+    "overall_concern_roc_auc": 0.8275469490923524,
+    "phone_concern_roc_auc": 0.8417439703153989,
+    "melanoma_roc_auc": 0.8814960629921259,
+    "accuracy": 0.739385065885798,
+    "balanced_accuracy": 0.5618067305884565,
+    "sensitivity": 0.9814814814814815,
+    "specificity": 0.14213197969543148,
+    "precision": 0.7383900928792569,
+    "f1": 0.842756183745583,
+    "tn": 28,
+    "fp": 169,
+    "fn": 9,
+    "tp": 477,
+    "roc_auc": 0.8275469490923524,
+    "threshold_higher_concern": 0.28098780393600464,
+    "threshold_melanoma": 0.0012697950005531315,
+    "melanoma_images": 48,
+    "melanoma_sensitivity": 1.0,
+    "melanoma_head_roc_auc": 0.8814960629921259,
+    "decision_margin_roc_auc": 0.7750308119738464,
+    "eligible_group_count": 4,
+    "mean_eligible_tone_auc": 0.8219044788282941,
+    "minimum_eligible_tone_auc": 0.7612903225806451,
+    "eligible_tone_auc_range": 0.14834823163622235,
+    "tone_groups": [
+      {
+        "skin_tone_class": "1.0",
+        "images": 26,
+        "positives": 23,
+        "negatives": 3,
+        "roc_auc": null,
+        "selection_eligible": false
+      },
+      {
+        "skin_tone_class": "2.0",
+        "images": 154,
+        "positives": 102,
+        "negatives": 52,
+        "roc_auc": 0.8122171945701357,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "3.0",
+        "images": 335,
+        "positives": 247,
+        "negatives": 88,
+        "roc_auc": 0.8044718439455281,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "4.0",
+        "images": 117,
+        "positives": 83,
+        "negatives": 34,
+        "roc_auc": 0.9096385542168675,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "5.0",
+        "images": 41,
+        "positives": 31,
+        "negatives": 10,
+        "roc_auc": 0.7612903225806451,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "missing",
+        "images": 10,
+        "positives": 0,
+        "negatives": 10,
+        "roc_auc": null,
+        "selection_eligible": false
+      }
+    ]
+  },
+  {
+    "epoch": 2,
+    "train_loss": 0.30803095246895706,
+    "val_loss": 0.5321023633082708,
+    "selection_objective": 0.837001307257391,
+    "overall_concern_roc_auc": 0.8256877859246725,
+    "phone_concern_roc_auc": 0.8434137291280148,
+    "melanoma_roc_auc": 0.878018372703412,
+    "accuracy": 0.7379209370424598,
+    "balanced_accuracy": 0.5592686595224666,
+    "sensitivity": 0.9814814814814815,
+    "specificity": 0.13705583756345177,
+    "precision": 0.7372488408037094,
+    "f1": 0.8420123565754634,
+    "tn": 27,
+    "fp": 170,
+    "fn": 9,
+    "tp": 477,
+    "roc_auc": 0.8256877859246725,
+    "threshold_higher_concern": 0.37024880945682526,
+    "threshold_melanoma": 0.0004751223139464855,
+    "melanoma_images": 48,
+    "melanoma_sensitivity": 1.0,
+    "melanoma_head_roc_auc": 0.878018372703412,
+    "decision_margin_roc_auc": 0.7607110776879531,
+    "eligible_group_count": 4,
+    "mean_eligible_tone_auc": 0.822980945133194,
+    "minimum_eligible_tone_auc": 0.767741935483871,
+    "eligible_tone_auc_range": 0.1411879015111679,
+    "tone_groups": [
+      {
+        "skin_tone_class": "1.0",
+        "images": 26,
+        "positives": 23,
+        "negatives": 3,
+        "roc_auc": null,
+        "selection_eligible": false
+      },
+      {
+        "skin_tone_class": "2.0",
+        "images": 154,
+        "positives": 102,
+        "negatives": 52,
+        "roc_auc": 0.8156108597285068,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "3.0",
+        "images": 335,
+        "positives": 247,
+        "negatives": 88,
+        "roc_auc": 0.7996411483253589,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "4.0",
+        "images": 117,
+        "positives": 83,
+        "negatives": 34,
+        "roc_auc": 0.9089298369950389,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "5.0",
+        "images": 41,
+        "positives": 31,
+        "negatives": 10,
+        "roc_auc": 0.767741935483871,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "missing",
+        "images": 10,
+        "positives": 0,
+        "negatives": 10,
+        "roc_auc": null,
+        "selection_eligible": false
+      }
+    ]
+  },
+  {
+    "epoch": 3,
+    "train_loss": 0.3008403589229773,
+    "val_loss": 0.5358138054609298,
+    "selection_objective": 0.8398047392268805,
+    "overall_concern_roc_auc": 0.829124104363811,
+    "phone_concern_roc_auc": 0.8458256029684601,
+    "melanoma_roc_auc": 0.8826771653543307,
+    "accuracy": 0.7379209370424598,
+    "balanced_accuracy": 0.5577593950408389,
+    "sensitivity": 0.9835390946502057,
+    "specificity": 0.1319796954314721,
+    "precision": 0.736517719568567,
+    "f1": 0.8422907488986784,
+    "tn": 26,
+    "fp": 171,
+    "fn": 8,
+    "tp": 478,
+    "roc_auc": 0.829124104363811,
+    "threshold_higher_concern": 0.15873993247747423,
+    "threshold_melanoma": 0.0014391541806980967,
+    "melanoma_images": 48,
+    "melanoma_sensitivity": 1.0,
+    "melanoma_head_roc_auc": 0.8826771653543307,
+    "decision_margin_roc_auc": 0.788306072570032,
+    "eligible_group_count": 4,
+    "mean_eligible_tone_auc": 0.824158850045619,
+    "minimum_eligible_tone_auc": 0.767741935483871,
+    "eligible_tone_auc_range": 0.1411879015111679,
+    "tone_groups": [
+      {
+        "skin_tone_class": "1.0",
+        "images": 26,
+        "positives": 23,
+        "negatives": 3,
+        "roc_auc": null,
+        "selection_eligible": false
+      },
+      {
+        "skin_tone_class": "2.0",
+        "images": 154,
+        "positives": 102,
+        "negatives": 52,
+        "roc_auc": 0.8144796380090498,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "3.0",
+        "images": 335,
+        "positives": 247,
+        "negatives": 88,
+        "roc_auc": 0.805483989694516,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "4.0",
+        "images": 117,
+        "positives": 83,
+        "negatives": 34,
+        "roc_auc": 0.9089298369950389,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "5.0",
+        "images": 41,
+        "positives": 31,
+        "negatives": 10,
+        "roc_auc": 0.767741935483871,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "missing",
+        "images": 10,
+        "positives": 0,
+        "negatives": 10,
+        "roc_auc": null,
+        "selection_eligible": false
+      }
+    ]
+  },
+  {
+    "epoch": 4,
+    "train_loss": 0.3093577403538298,
+    "val_loss": 0.5064273029565811,
+    "selection_objective": 0.8397417574494878,
+    "overall_concern_roc_auc": 0.828173633306177,
+    "phone_concern_roc_auc": 0.8387755102040817,
+    "melanoma_roc_auc": 0.8927821522309711,
+    "accuracy": 0.739385065885798,
+    "balanced_accuracy": 0.558788201625201,
+    "sensitivity": 0.98559670781893,
+    "specificity": 0.1319796954314721,
+    "precision": 0.7369230769230769,
+    "f1": 0.8433098591549296,
+    "tn": 26,
+    "fp": 171,
+    "fn": 7,
+    "tp": 479,
+    "roc_auc": 0.828173633306177,
+    "threshold_higher_concern": 0.18303423285484316,
+    "threshold_melanoma": 0.003912690640427173,
+    "melanoma_images": 48,
+    "melanoma_sensitivity": 1.0,
+    "melanoma_head_roc_auc": 0.8927821522309711,
+    "decision_margin_roc_auc": 0.777673330408807,
+    "eligible_group_count": 4,
+    "mean_eligible_tone_auc": 0.8223821374063635,
+    "minimum_eligible_tone_auc": 0.7645161290322581,
+    "eligible_tone_auc_range": 0.14299627351912392,
+    "tone_groups": [
+      {
+        "skin_tone_class": "1.0",
+        "images": 26,
+        "positives": 23,
+        "negatives": 3,
+        "roc_auc": null,
+        "selection_eligible": false
+      },
+      {
+        "skin_tone_class": "2.0",
+        "images": 154,
+        "positives": 102,
+        "negatives": 52,
+        "roc_auc": 0.8095776772247361,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "3.0",
+        "images": 335,
+        "positives": 247,
+        "negatives": 88,
+        "roc_auc": 0.8079223408170777,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "4.0",
+        "images": 117,
+        "positives": 83,
+        "negatives": 34,
+        "roc_auc": 0.907512402551382,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "5.0",
+        "images": 41,
+        "positives": 31,
+        "negatives": 10,
+        "roc_auc": 0.7645161290322581,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "missing",
+        "images": 10,
+        "positives": 0,
+        "negatives": 10,
+        "roc_auc": null,
+        "selection_eligible": false
+      }
+    ]
+  },
+  {
+    "epoch": 5,
+    "train_loss": 0.2781419078312298,
+    "val_loss": 0.5344969977935156,
+    "selection_objective": 0.8412984429331433,
+    "overall_concern_roc_auc": 0.8313174991121974,
+    "phone_concern_roc_auc": 0.8421150278293136,
+    "melanoma_roc_auc": 0.891502624671916,
+    "accuracy": 0.7379209370424598,
+    "balanced_accuracy": 0.5547408660775834,
+    "sensitivity": 0.9876543209876543,
+    "specificity": 0.1218274111675127,
+    "precision": 0.7350689127105666,
+    "f1": 0.8428446005267779,
+    "tn": 24,
+    "fp": 173,
+    "fn": 6,
+    "tp": 480,
+    "roc_auc": 0.8313174991121974,
+    "threshold_higher_concern": 0.11851538926362991,
+    "threshold_melanoma": 0.002587618539109826,
+    "melanoma_images": 48,
+    "melanoma_sensitivity": 1.0,
+    "melanoma_head_roc_auc": 0.891502624671916,
+    "decision_margin_roc_auc": 0.7980614568319024,
+    "eligible_group_count": 4,
+    "mean_eligible_tone_auc": 0.8240869475104051,
+    "minimum_eligible_tone_auc": 0.7645161290322581,
+    "eligible_tone_auc_range": 0.14618550101735217,
+    "tone_groups": [
+      {
+        "skin_tone_class": "1.0",
+        "images": 26,
+        "positives": 23,
+        "negatives": 3,
+        "roc_auc": null,
+        "selection_eligible": false
+      },
+      {
+        "skin_tone_class": "2.0",
+        "images": 154,
+        "positives": 102,
+        "negatives": 52,
+        "roc_auc": 0.8093891402714932,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "3.0",
+        "images": 335,
+        "positives": 247,
+        "negatives": 88,
+        "roc_auc": 0.811740890688259,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "4.0",
+        "images": 117,
+        "positives": 83,
+        "negatives": 34,
+        "roc_auc": 0.9107016300496102,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "5.0",
+        "images": 41,
+        "positives": 31,
+        "negatives": 10,
+        "roc_auc": 0.7645161290322581,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "missing",
+        "images": 10,
+        "positives": 0,
+        "negatives": 10,
+        "roc_auc": null,
+        "selection_eligible": false
+      }
+    ]
+  },
+  {
+    "epoch": 6,
+    "train_loss": 0.2716108104675123,
+    "val_loss": 0.5435318996508917,
+    "selection_objective": 0.8429958836122389,
+    "overall_concern_roc_auc": 0.8289152096258696,
+    "phone_concern_roc_auc": 0.838961038961039,
+    "melanoma_roc_auc": 0.8913713910761154,
+    "accuracy": 0.7379209370424598,
+    "balanced_accuracy": 0.5592686595224666,
+    "sensitivity": 0.9814814814814815,
+    "specificity": 0.13705583756345177,
+    "precision": 0.7372488408037094,
+    "f1": 0.8420123565754634,
+    "tn": 27,
+    "fp": 170,
+    "fn": 9,
+    "tp": 477,
+    "roc_auc": 0.8289152096258696,
+    "threshold_higher_concern": 0.1468595349788666,
+    "threshold_melanoma": 0.0019323010090738536,
+    "melanoma_images": 48,
+    "melanoma_sensitivity": 1.0,
+    "melanoma_head_roc_auc": 0.8913713910761154,
+    "decision_margin_roc_auc": 0.7934971068078795,
+    "eligible_group_count": 4,
+    "mean_eligible_tone_auc": 0.8276781042131116,
+    "minimum_eligible_tone_auc": 0.7903225806451613,
+    "eligible_tone_auc_range": 0.10797649802245035,
+    "tone_groups": [
+      {
+        "skin_tone_class": "1.0",
+        "images": 26,
+        "positives": 23,
+        "negatives": 3,
+        "roc_auc": null,
+        "selection_eligible": false
+      },
+      {
+        "skin_tone_class": "2.0",
+        "images": 154,
+        "positives": 102,
+        "negatives": 52,
+        "roc_auc": 0.8110859728506787,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "3.0",
+        "images": 335,
+        "positives": 247,
+        "negatives": 88,
+        "roc_auc": 0.8110047846889951,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "4.0",
+        "images": 117,
+        "positives": 83,
+        "negatives": 34,
+        "roc_auc": 0.8982990786676116,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "5.0",
+        "images": 41,
+        "positives": 31,
+        "negatives": 10,
+        "roc_auc": 0.7903225806451613,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "missing",
+        "images": 10,
+        "positives": 0,
+        "negatives": 10,
+        "roc_auc": null,
+        "selection_eligible": false
+      }
+    ]
+  },
+  {
+    "epoch": 7,
+    "train_loss": 0.28171749966274395,
+    "val_loss": 0.5343140949805577,
+    "selection_objective": 0.8434392622993163,
+    "overall_concern_roc_auc": 0.828455641202398,
+    "phone_concern_roc_auc": 0.8484230055658627,
+    "melanoma_roc_auc": 0.8930446194225722,
+    "accuracy": 0.739385065885798,
+    "balanced_accuracy": 0.5572789371435733,
+    "sensitivity": 0.9876543209876543,
+    "specificity": 0.12690355329949238,
+    "precision": 0.7361963190184049,
+    "f1": 0.843585237258348,
+    "tn": 25,
+    "fp": 172,
+    "fn": 6,
+    "tp": 480,
+    "roc_auc": 0.828455641202398,
+    "threshold_higher_concern": 0.14137989729642866,
+    "threshold_melanoma": 0.002527641598135233,
+    "melanoma_images": 48,
+    "melanoma_sensitivity": 1.0,
+    "melanoma_head_roc_auc": 0.8930446194225722,
+    "decision_margin_roc_auc": 0.7912201541643166,
+    "eligible_group_count": 4,
+    "mean_eligible_tone_auc": 0.8257444770537313,
+    "minimum_eligible_tone_auc": 0.7709677419354839,
+    "eligible_tone_auc_range": 0.1301662056194417,
+    "tone_groups": [
+      {
+        "skin_tone_class": "1.0",
+        "images": 26,
+        "positives": 23,
+        "negatives": 3,
+        "roc_auc": null,
+        "selection_eligible": false
+      },
+      {
+        "skin_tone_class": "2.0",
+        "images": 154,
+        "positives": 102,
+        "negatives": 52,
+        "roc_auc": 0.8244720965309201,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "3.0",
+        "images": 335,
+        "positives": 247,
+        "negatives": 88,
+        "roc_auc": 0.8064041221935959,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "4.0",
+        "images": 117,
+        "positives": 83,
+        "negatives": 34,
+        "roc_auc": 0.9011339475549256,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "5.0",
+        "images": 41,
+        "positives": 31,
+        "negatives": 10,
+        "roc_auc": 0.7709677419354839,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "missing",
+        "images": 10,
+        "positives": 0,
+        "negatives": 10,
+        "roc_auc": null,
+        "selection_eligible": false
+      }
+    ]
+  },
+  {
+    "epoch": 8,
+    "train_loss": 0.2708412544562085,
+    "val_loss": 0.5378030478954315,
+    "selection_objective": 0.8345778172645508,
+    "overall_concern_roc_auc": 0.8190971569426166,
+    "phone_concern_roc_auc": 0.8322820037105751,
+    "melanoma_roc_auc": 0.8877624671916011,
+    "accuracy": 0.739385065885798,
+    "balanced_accuracy": 0.5618067305884565,
+    "sensitivity": 0.9814814814814815,
+    "specificity": 0.14213197969543148,
+    "precision": 0.7383900928792569,
+    "f1": 0.842756183745583,
+    "tn": 28,
+    "fp": 169,
+    "fn": 9,
+    "tp": 477,
+    "roc_auc": 0.8190971569426166,
+    "threshold_higher_concern": 0.15327206790447234,
+    "threshold_melanoma": 0.0024287257809191944,
+    "melanoma_images": 48,
+    "melanoma_sensitivity": 1.0,
+    "melanoma_head_roc_auc": 0.8877624671916011,
+    "decision_margin_roc_auc": 0.7730880909109898,
+    "eligible_group_count": 4,
+    "mean_eligible_tone_auc": 0.8158203697642863,
+    "minimum_eligible_tone_auc": 0.7741935483870968,
+    "eligible_tone_auc_range": 0.11879015111680113,
+    "tone_groups": [
+      {
+        "skin_tone_class": "1.0",
+        "images": 26,
+        "positives": 23,
+        "negatives": 3,
+        "roc_auc": null,
+        "selection_eligible": false
+      },
+      {
+        "skin_tone_class": "2.0",
+        "images": 154,
+        "positives": 102,
+        "negatives": 52,
+        "roc_auc": 0.7960030165912518,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "3.0",
+        "images": 335,
+        "positives": 247,
+        "negatives": 88,
+        "roc_auc": 0.8001012145748987,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "4.0",
+        "images": 117,
+        "positives": 83,
+        "negatives": 34,
+        "roc_auc": 0.8929836995038979,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "5.0",
+        "images": 41,
+        "positives": 31,
+        "negatives": 10,
+        "roc_auc": 0.7741935483870968,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "missing",
+        "images": 10,
+        "positives": 0,
+        "negatives": 10,
+        "roc_auc": null,
+        "selection_eligible": false
+      }
+    ]
+  },
+  {
+    "epoch": 9,
+    "train_loss": 0.25646805873896816,
+    "val_loss": 0.548422971367836,
+    "selection_objective": 0.8395754308008411,
+    "overall_concern_roc_auc": 0.8251446596060245,
+    "phone_concern_roc_auc": 0.8385899814471244,
+    "melanoma_roc_auc": 0.8898293963254593,
+    "accuracy": 0.7349926793557833,
+    "balanced_accuracy": 0.5541925173904869,
+    "sensitivity": 0.9814814814814815,
+    "specificity": 0.12690355329949238,
+    "precision": 0.7349768875192604,
+    "f1": 0.8405286343612335,
+    "tn": 25,
+    "fp": 172,
+    "fn": 9,
+    "tp": 477,
+    "roc_auc": 0.8251446596060245,
+    "threshold_higher_concern": 0.17190839797258378,
+    "threshold_melanoma": 0.0014402218488976375,
+    "melanoma_images": 48,
+    "melanoma_sensitivity": 1.0,
+    "melanoma_head_roc_auc": 0.8898293963254593,
+    "decision_margin_roc_auc": 0.7896116646821667,
+    "eligible_group_count": 4,
+    "mean_eligible_tone_auc": 0.8229499064821203,
+    "minimum_eligible_tone_auc": 0.7774193548387096,
+    "eligible_tone_auc_range": 0.12052536521798773,
+    "tone_groups": [
+      {
+        "skin_tone_class": "1.0",
+        "images": 26,
+        "positives": 23,
+        "negatives": 3,
+        "roc_auc": null,
+        "selection_eligible": false
+      },
+      {
+        "skin_tone_class": "2.0",
+        "images": 154,
+        "positives": 102,
+        "negatives": 52,
+        "roc_auc": 0.8131598793363499,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "3.0",
+        "images": 335,
+        "positives": 247,
+        "negatives": 88,
+        "roc_auc": 0.8032756716967242,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "4.0",
+        "images": 117,
+        "positives": 83,
+        "negatives": 34,
+        "roc_auc": 0.8979447200566973,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "5.0",
+        "images": 41,
+        "positives": 31,
+        "negatives": 10,
+        "roc_auc": 0.7774193548387096,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "missing",
+        "images": 10,
+        "positives": 0,
+        "negatives": 10,
+        "roc_auc": null,
+        "selection_eligible": false
+      }
+    ]
+  },
+  {
+    "epoch": 10,
+    "train_loss": 0.25374804983044613,
+    "val_loss": 0.5635473450024923,
+    "selection_objective": 0.8417925000899007,
+    "overall_concern_roc_auc": 0.8242777464435671,
+    "phone_concern_roc_auc": 0.8476808905380334,
+    "melanoma_roc_auc": 0.8960301837270341,
+    "accuracy": 0.7408491947291361,
+    "balanced_accuracy": 0.5628355371728186,
+    "sensitivity": 0.9835390946502057,
+    "specificity": 0.14213197969543148,
+    "precision": 0.7387944358578052,
+    "f1": 0.8437775816416593,
+    "tn": 28,
+    "fp": 169,
+    "fn": 8,
+    "tp": 478,
+    "roc_auc": 0.8242777464435671,
+    "threshold_higher_concern": 0.1173594406247139,
+    "threshold_melanoma": 0.0010177019238471986,
+    "melanoma_images": 48,
+    "melanoma_sensitivity": 1.0,
+    "melanoma_head_roc_auc": 0.8960301837270341,
+    "decision_margin_roc_auc": 0.7865618015082199,
+    "eligible_group_count": 4,
+    "mean_eligible_tone_auc": 0.8179901381279574,
+    "minimum_eligible_tone_auc": 0.7709677419354839,
+    "eligible_tone_auc_range": 0.11811801284835743,
+    "tone_groups": [
+      {
+        "skin_tone_class": "1.0",
+        "images": 26,
+        "positives": 23,
+        "negatives": 3,
+        "roc_auc": null,
+        "selection_eligible": false
+      },
+      {
+        "skin_tone_class": "2.0",
+        "images": 154,
+        "positives": 102,
+        "negatives": 52,
+        "roc_auc": 0.8065610859728507,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "3.0",
+        "images": 335,
+        "positives": 247,
+        "negatives": 88,
+        "roc_auc": 0.8053459698196539,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "4.0",
+        "images": 117,
+        "positives": 83,
+        "negatives": 34,
+        "roc_auc": 0.8890857547838413,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "5.0",
+        "images": 41,
+        "positives": 31,
+        "negatives": 10,
+        "roc_auc": 0.7709677419354839,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "missing",
+        "images": 10,
+        "positives": 0,
+        "negatives": 10,
+        "roc_auc": null,
+        "selection_eligible": false
+      }
+    ]
+  },
+  {
+    "epoch": 11,
+    "train_loss": 0.23785770942669104,
+    "val_loss": 0.5750766148169836,
+    "selection_objective": 0.8421278195329854,
+    "overall_concern_roc_auc": 0.8263353596122913,
+    "phone_concern_roc_auc": 0.8437847866419296,
+    "melanoma_roc_auc": 0.8935367454068242,
+    "accuracy": 0.7379209370424598,
+    "balanced_accuracy": 0.5592686595224666,
+    "sensitivity": 0.9814814814814815,
+    "specificity": 0.13705583756345177,
+    "precision": 0.7372488408037094,
+    "f1": 0.8420123565754634,
+    "tn": 27,
+    "fp": 170,
+    "fn": 9,
+    "tp": 477,
+    "roc_auc": 0.8263353596122913,
+    "threshold_higher_concern": 0.1645611834526062,
+    "threshold_melanoma": 0.0006293587677646431,
+    "melanoma_images": 48,
+    "melanoma_sensitivity": 1.0,
+    "melanoma_head_roc_auc": 0.8935367454068242,
+    "decision_margin_roc_auc": 0.788838754151783,
+    "eligible_group_count": 4,
+    "mean_eligible_tone_auc": 0.823144407559021,
+    "minimum_eligible_tone_auc": 0.7774193548387096,
+    "eligible_tone_auc_range": 0.11769049633067385,
+    "tone_groups": [
+      {
+        "skin_tone_class": "1.0",
+        "images": 26,
+        "positives": 23,
+        "negatives": 3,
+        "roc_auc": null,
+        "selection_eligible": false
+      },
+      {
+        "skin_tone_class": "2.0",
+        "images": 154,
+        "positives": 102,
+        "negatives": 52,
+        "roc_auc": 0.8103318250377074,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "3.0",
+        "images": 335,
+        "positives": 247,
+        "negatives": 88,
+        "roc_auc": 0.8097165991902834,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "4.0",
+        "images": 117,
+        "positives": 83,
+        "negatives": 34,
+        "roc_auc": 0.8951098511693835,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "5.0",
+        "images": 41,
+        "positives": 31,
+        "negatives": 10,
+        "roc_auc": 0.7774193548387096,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "missing",
+        "images": 10,
+        "positives": 0,
+        "negatives": 10,
+        "roc_auc": null,
+        "selection_eligible": false
+      }
+    ]
+  },
+  {
+    "epoch": 12,
+    "train_loss": 0.23540096626718446,
+    "val_loss": 0.5892144779364268,
+    "selection_objective": 0.8409443155457981,
+    "overall_concern_roc_auc": 0.8235152806500805,
+    "phone_concern_roc_auc": 0.8476808905380334,
+    "melanoma_roc_auc": 0.8904527559055118,
+    "accuracy": 0.7364568081991215,
+    "balanced_accuracy": 0.5567305884564768,
+    "sensitivity": 0.9814814814814815,
+    "specificity": 0.1319796954314721,
+    "precision": 0.7361111111111112,
+    "f1": 0.8412698412698413,
+    "tn": 26,
+    "fp": 171,
+    "fn": 9,
+    "tp": 477,
+    "roc_auc": 0.8235152806500805,
+    "threshold_higher_concern": 0.19510031640529638,
+    "threshold_melanoma": 0.00014034928986802697,
+    "melanoma_images": 48,
+    "melanoma_sensitivity": 1.0,
+    "melanoma_head_roc_auc": 0.8904527559055118,
+    "decision_margin_roc_auc": 0.7792295962064717,
+    "eligible_group_count": 4,
+    "mean_eligible_tone_auc": 0.8207515262245468,
+    "minimum_eligible_tone_auc": 0.7741935483870968,
+    "eligible_tone_auc_range": 0.11985322694954392,
+    "tone_groups": [
+      {
+        "skin_tone_class": "1.0",
+        "images": 26,
+        "positives": 23,
+        "negatives": 3,
+        "roc_auc": null,
+        "selection_eligible": false
+      },
+      {
+        "skin_tone_class": "2.0",
+        "images": 154,
+        "positives": 102,
+        "negatives": 52,
+        "roc_auc": 0.8125942684766214,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "3.0",
+        "images": 335,
+        "positives": 247,
+        "negatives": 88,
+        "roc_auc": 0.8021715126978285,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "4.0",
+        "images": 117,
+        "positives": 83,
+        "negatives": 34,
+        "roc_auc": 0.8940467753366407,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "5.0",
+        "images": 41,
+        "positives": 31,
+        "negatives": 10,
+        "roc_auc": 0.7741935483870968,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "missing",
+        "images": 10,
+        "positives": 0,
+        "negatives": 10,
+        "roc_auc": null,
+        "selection_eligible": false
+      }
+    ]
+  }
+]

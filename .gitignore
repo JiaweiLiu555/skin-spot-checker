@@ -1,0 +1,25 @@
+.DS_Store
+.venv/
+__pycache__/
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+.streamlit/
+web/node_modules/
+web/dist/
+
+# Large or generated artifacts
+data/*
+models/**/*.pt
+models/**/*.pth
+reports/**/*.csv
+reports/**/*.png
+releases/
+web/*.zip
+
+!data/.gitkeep
+!models/.gitkeep
+!reports/.gitkeep
+
+# Local Netlify folder
+.netlify/

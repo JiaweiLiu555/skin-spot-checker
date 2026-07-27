@@ -1,0 +1,70 @@
+{
+  "status": "not established",
+  "reason": "Skin-tone subgroup estimates are descriptive only. Groups are uneven, some lack both outcome classes, and no prospective fairness study was run.",
+  "reported_groups": [
+    {
+      "skin_tone_class": "1.0",
+      "images": 35,
+      "higher_concern_images": 28,
+      "lower_concern_images": 7,
+      "status": "insufficient data"
+    },
+    {
+      "skin_tone_class": "2.0",
+      "images": 103,
+      "higher_concern_images": 79,
+      "lower_concern_images": 24,
+      "status": "descriptive only",
+      "accuracy": 0.7961165048543689,
+      "balanced_accuracy": 0.5915084388185654,
+      "sensitivity": 0.9746835443037974,
+      "specificity": 0.20833333333333334,
+      "precision": 0.8020833333333334,
+      "f1": 0.88,
+      "tn": 5,
+      "fp": 19,
+      "fn": 2,
+      "tp": 77,
+      "roc_auc": 0.8691983122362869
+    },
+    {
+      "skin_tone_class": "3.0",
+      "images": 28,
+      "higher_concern_images": 19,
+      "lower_concern_images": 9,
+      "status": "descriptive only",
+      "accuracy": 0.75,
+      "balanced_accuracy": 0.6111111111111112,
+      "sensitivity": 1.0,
+      "specificity": 0.2222222222222222,
+      "precision": 0.7307692307692307,
+      "f1": 0.8444444444444444,
+      "tn": 2,
+      "fp": 7,
+      "fn": 0,
+      "tp": 19,
+      "roc_auc": 0.7953216374269005
+    },
+    {
+      "skin_tone_class": "4.0",
+      "images": 16,
+      "higher_concern_images": 7,
+      "lower_concern_images": 9,
+      "status": "insufficient data"
+    },
+    {
+      "skin_tone_class": "5.0",
+      "images": 3,
+      "higher_concern_images": 3,
+      "lower_concern_images": 0,
+      "status": "insufficient data"
+    },
+    {
+      "skin_tone_class": "missing",
+      "images": 14,
+      "higher_concern_images": 0,
+      "lower_concern_images": 14,
+      "status": "insufficient data"
+    }
+  ]
+}

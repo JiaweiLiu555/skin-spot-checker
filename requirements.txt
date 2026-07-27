@@ -1,0 +1,12 @@
+streamlit>=1.40,<2
+torch>=2.4,<3
+torchvision>=0.19,<1
+pandas>=2.2,<4
+numpy>=2.0,<3
+Pillow>=10,<13
+scikit-learn>=1.5,<2
+matplotlib>=3.9,<4
+seaborn>=0.13,<1
+pytest>=8,<10
+onnx>=1.18,<2
+onnxruntime>=1.22,<2

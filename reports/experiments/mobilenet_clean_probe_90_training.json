@@ -1,0 +1,44 @@
+{
+  "method": "two frozen linear probes on clean lesion-level training features",
+  "source_checkpoint": "models/skin_lesion_mobilenet_v3.pt",
+  "training_images": 4192,
+  "validation_images": 524,
+  "test_or_ood_used_for_selection": false,
+  "selected_c": {
+    "higher_concern": 0.001,
+    "melanoma": 0.01
+  },
+  "validation_head_roc_auc": {
+    "higher_concern": 0.8314404830362278,
+    "melanoma": 0.8844223484848484
+  },
+  "thresholds": {
+    "higher_concern": 0.046157504767179496,
+    "melanoma": 0.9104191839694977
+  },
+  "validation_metrics": {
+    "accuracy": 0.7824427480916031,
+    "balanced_accuracy": 0.6230592294422082,
+    "sensitivity": 0.9893617021276596,
+    "specificity": 0.25675675675675674,
+    "precision": 0.7717842323651453,
+    "f1": 0.8671328671328671,
+    "tn": 38,
+    "fp": 110,
+    "fn": 4,
+    "tp": 372,
+    "roc_auc": 0.8314404830362278,
+    "threshold_higher_concern": 0.046157504767179496,
+    "threshold_melanoma": 0.9104191839694977,
+    "melanoma_images": 44,
+    "melanoma_sensitivity": 0.9090909090909091,
+    "melanoma_head_roc_auc": 0.8844223484848484,
+    "decision_margin_roc_auc": 0.8219163312248418,
+    "higher_concern_head_sensitivity": 0.9893617021276596,
+    "higher_concern_head_specificity": 0.25675675675675674,
+    "melanoma_head_sensitivity": 0.36363636363636365,
+    "melanoma_head_specificity": 0.9666666666666667,
+    "selected_c_higher_concern": 0.001,
+    "selected_c_melanoma": 0.01
+  }
+}

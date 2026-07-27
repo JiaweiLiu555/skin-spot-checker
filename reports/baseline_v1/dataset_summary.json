@@ -1,0 +1,53 @@
+{
+  "source": "MILK10k",
+  "image_type": "clinical: close-up",
+  "higher_concern_classes": [
+    "AKIEC",
+    "BCC",
+    "MAL_OTH",
+    "MEL",
+    "SCCKA"
+  ],
+  "lower_concern_classes": [
+    "BEN_OTH",
+    "BKL",
+    "DF",
+    "INF",
+    "NV",
+    "VASC"
+  ],
+  "missing_images": 0,
+  "splits": {
+    "train": {
+      "images": 4192,
+      "higher_concern": 3006,
+      "lower_concern": 1186,
+      "lesions": 4192
+    },
+    "val": {
+      "images": 524,
+      "higher_concern": 376,
+      "lower_concern": 148,
+      "lesions": 524
+    },
+    "test": {
+      "images": 524,
+      "higher_concern": 375,
+      "lower_concern": 149,
+      "lesions": 524
+    }
+  },
+  "diagnosis_counts": {
+    "BCC": 2522,
+    "NV": 746,
+    "BKL": 544,
+    "SCCKA": 473,
+    "MEL": 450,
+    "AKIEC": 303,
+    "DF": 52,
+    "INF": 50,
+    "VASC": 47,
+    "BEN_OTH": 44,
+    "MAL_OTH": 9
+  }
+}

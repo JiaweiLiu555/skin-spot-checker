@@ -1,0 +1,92 @@
+{
+  "status": "not established",
+  "reason": "Subgroup estimates are descriptive only. Skin-tone groups are uneven, some are absent or too small, and this retrospective dataset cannot establish fairness.",
+  "reported_groups": [
+    {
+      "skin_tone_class": "0",
+      "images": 1,
+      "higher_concern_images": 0,
+      "lower_concern_images": 1,
+      "status": "insufficient data"
+    },
+    {
+      "skin_tone_class": "1",
+      "images": 11,
+      "higher_concern_images": 7,
+      "lower_concern_images": 4,
+      "status": "insufficient data"
+    },
+    {
+      "skin_tone_class": "2",
+      "images": 42,
+      "higher_concern_images": 18,
+      "lower_concern_images": 24,
+      "status": "descriptive only",
+      "accuracy": 0.5952380952380952,
+      "balanced_accuracy": 0.6388888888888888,
+      "sensitivity": 0.9444444444444444,
+      "specificity": 0.3333333333333333,
+      "precision": 0.5151515151515151,
+      "f1": 0.6666666666666666,
+      "tn": 8,
+      "fp": 16,
+      "fn": 1,
+      "tp": 17,
+      "roc_auc": 0.5856481481481481
+    },
+    {
+      "skin_tone_class": "3",
+      "images": 326,
+      "higher_concern_images": 245,
+      "lower_concern_images": 81,
+      "status": "descriptive only",
+      "accuracy": 0.7822085889570553,
+      "balanced_accuracy": 0.5823885109599395,
+      "sensitivity": 0.9795918367346939,
+      "specificity": 0.18518518518518517,
+      "precision": 0.7843137254901961,
+      "f1": 0.8711433756805808,
+      "tn": 15,
+      "fp": 66,
+      "fn": 5,
+      "tp": 240,
+      "roc_auc": 0.743663391282439
+    },
+    {
+      "skin_tone_class": "4",
+      "images": 106,
+      "higher_concern_images": 75,
+      "lower_concern_images": 31,
+      "status": "descriptive only",
+      "accuracy": 0.8018867924528302,
+      "balanced_accuracy": 0.6802150537634408,
+      "sensitivity": 0.9733333333333334,
+      "specificity": 0.3870967741935484,
+      "precision": 0.7934782608695652,
+      "f1": 0.874251497005988,
+      "tn": 12,
+      "fp": 19,
+      "fn": 2,
+      "tp": 73,
+      "roc_auc": 0.8073118279569893
+    },
+    {
+      "skin_tone_class": "5",
+      "images": 38,
+      "higher_concern_images": 30,
+      "lower_concern_images": 8,
+      "status": "descriptive only",
+      "accuracy": 0.7894736842105263,
+      "balanced_accuracy": 0.5,
+      "sensitivity": 1.0,
+      "specificity": 0.0,
+      "precision": 0.7894736842105263,
+      "f1": 0.8823529411764706,
+      "tn": 0,
+      "fp": 8,
+      "fn": 0,
+      "tp": 30,
+      "roc_auc": 0.8791666666666667
+    }
+  ]
+}

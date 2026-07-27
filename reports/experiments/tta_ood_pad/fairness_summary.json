@@ -1,0 +1,81 @@
+{
+  "status": "not established",
+  "reason": "Subgroup estimates are descriptive only. Skin-tone groups are uneven, some are absent or too small, and this retrospective dataset cannot establish fairness.",
+  "reported_groups": [
+    {
+      "skin_tone_class": "1.0",
+      "images": 27,
+      "higher_concern_images": 16,
+      "lower_concern_images": 11,
+      "status": "descriptive only",
+      "accuracy": 0.5925925925925926,
+      "balanced_accuracy": 0.5,
+      "sensitivity": 1.0,
+      "specificity": 0.0,
+      "precision": 0.5925925925925926,
+      "f1": 0.7441860465116279,
+      "tn": 0,
+      "fp": 11,
+      "fn": 0,
+      "tp": 16,
+      "roc_auc": 0.6022727272727273
+    },
+    {
+      "skin_tone_class": "2.0",
+      "images": 145,
+      "higher_concern_images": 94,
+      "lower_concern_images": 51,
+      "status": "descriptive only",
+      "accuracy": 0.6551724137931034,
+      "balanced_accuracy": 0.5098039215686274,
+      "sensitivity": 1.0,
+      "specificity": 0.0196078431372549,
+      "precision": 0.6527777777777778,
+      "f1": 0.7899159663865546,
+      "tn": 1,
+      "fp": 50,
+      "fn": 0,
+      "tp": 94,
+      "roc_auc": 0.7455152273675427
+    },
+    {
+      "skin_tone_class": "3.0",
+      "images": 58,
+      "higher_concern_images": 35,
+      "lower_concern_images": 23,
+      "status": "descriptive only",
+      "accuracy": 0.6206896551724138,
+      "balanced_accuracy": 0.5217391304347826,
+      "sensitivity": 1.0,
+      "specificity": 0.043478260869565216,
+      "precision": 0.6140350877192983,
+      "f1": 0.7608695652173914,
+      "tn": 1,
+      "fp": 22,
+      "fn": 0,
+      "tp": 35,
+      "roc_auc": 0.7826086956521738
+    },
+    {
+      "skin_tone_class": "4.0",
+      "images": 13,
+      "higher_concern_images": 4,
+      "lower_concern_images": 9,
+      "status": "insufficient data"
+    },
+    {
+      "skin_tone_class": "5.0",
+      "images": 2,
+      "higher_concern_images": 1,
+      "lower_concern_images": 1,
+      "status": "insufficient data"
+    },
+    {
+      "skin_tone_class": "missing",
+      "images": 22,
+      "higher_concern_images": 0,
+      "lower_concern_images": 22,
+      "status": "insufficient data"
+    }
+  ]
+}

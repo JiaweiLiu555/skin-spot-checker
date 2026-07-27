@@ -1,0 +1,150 @@
+{
+  "model": "Contour-aware MobileNetV3-Large (RGB + Sobel contour CNN)",
+  "architecture": "contour_aware_mobilenet_v3_large_multitask",
+  "contourAware": true,
+  "contourMethod": "Fixed Sobel edge maps encoded by a learned CNN branch and fused with RGB features",
+  "browserRuntimes": {
+    "iOS": "webgl",
+    "default": "wasm"
+  },
+  "inputName": "pixel_values",
+  "outputName": "logit",
+  "imageSize": 224,
+  "mean": [
+    0.485,
+    0.456,
+    0.406
+  ],
+  "std": [
+    0.229,
+    0.224,
+    0.225
+  ],
+  "thresholds": {
+    "higher_concern": 0.35191965000000003,
+    "melanoma": 0.0025276272
+  },
+  "outputClasses": [
+    "higher_concern",
+    "melanoma"
+  ],
+  "abstentionMargin": 0.0,
+  "alwaysReturnsDecisionAfterQualityPass": true,
+  "positiveLabel": "Higher concern",
+  "negativeLabel": "Lower concern",
+  "validationMetrics": {
+    "epoch": 7,
+    "train_loss": 0.28171749966274395,
+    "val_loss": 0.5343140949805577,
+    "selection_objective": 0.8434392622993163,
+    "overall_concern_roc_auc": 0.828455641202398,
+    "phone_concern_roc_auc": 0.8484230055658627,
+    "melanoma_roc_auc": 0.8930446194225722,
+    "accuracy": 0.7320644216691069,
+    "balanced_accuracy": 0.5642090200747844,
+    "sensitivity": 0.9609053497942387,
+    "specificity": 0.16751269035532995,
+    "precision": 0.7400950871632329,
+    "f1": 0.8361683079677709,
+    "tn": 33,
+    "fp": 164,
+    "fn": 19,
+    "tp": 467,
+    "roc_auc": 0.8284504188339495,
+    "threshold_higher_concern": 0.35191965000000003,
+    "threshold_melanoma": 0.0025276272,
+    "melanoma_images": 48,
+    "melanoma_sensitivity": 1.0,
+    "melanoma_head_roc_auc": 0.8930446194225722,
+    "decision_margin_roc_auc": 0.770675356687765,
+    "eligible_group_count": 4,
+    "mean_eligible_tone_auc": 0.8257444770537313,
+    "minimum_eligible_tone_auc": 0.7709677419354839,
+    "eligible_tone_auc_range": 0.1301662056194417,
+    "tone_groups": [
+      {
+        "skin_tone_class": "1.0",
+        "images": 26,
+        "positives": 23,
+        "negatives": 3,
+        "roc_auc": null,
+        "selection_eligible": false
+      },
+      {
+        "skin_tone_class": "2.0",
+        "images": 154,
+        "positives": 102,
+        "negatives": 52,
+        "roc_auc": 0.8244720965309201,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "3.0",
+        "images": 335,
+        "positives": 247,
+        "negatives": 88,
+        "roc_auc": 0.8064041221935959,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "4.0",
+        "images": 117,
+        "positives": 83,
+        "negatives": 34,
+        "roc_auc": 0.9011339475549256,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "5.0",
+        "images": 41,
+        "positives": 31,
+        "negatives": 10,
+        "roc_auc": 0.7709677419354839,
+        "selection_eligible": true
+      },
+      {
+        "skin_tone_class": "missing",
+        "images": 10,
+        "positives": 0,
+        "negatives": 10,
+        "roc_auc": null,
+        "selection_eligible": false
+      }
+    ],
+    "thresholds": {
+      "higher_concern": 0.35191965000000003,
+      "melanoma": 0.0025276272
+    },
+    "threshold_policy": {
+      "minimum_overall_sensitivity": 0.95,
+      "minimum_melanoma_sensitivity": 0.98,
+      "selection_data": "reports/experiments/contour_fair_seed2031_validation/predictions.csv",
+      "test_or_ood_used_for_selection": false
+    }
+  },
+  "onnxMaxAbsoluteError": 2.1457672119140625e-06,
+  "intendedImageType": "phone or clinical close-up image of one skin lesion",
+  "fairnessStatus": "not established",
+  "trainingStrategy": {
+    "source_checkpoint": "models/skin_lesion_mobilenet_v3.pt",
+    "contour_method": "fixed Sobel maps plus learned CNN fusion",
+    "tone_reweighting": true,
+    "tone_weight_cap": 3.0,
+    "camera_and_lighting_augmentation": true,
+    "validation_sensitivity_target": 0.98,
+    "selection_data": "data/combined_v2/val.csv",
+    "test_data_used_for_selection": false,
+    "release_threshold_policy": {
+      "minimum_overall_sensitivity": 0.95,
+      "minimum_melanoma_sensitivity": 0.98,
+      "selection_data": "reports/experiments/contour_fair_seed2031_validation/predictions.csv",
+      "test_or_ood_used_for_selection": false
+    }
+  },
+  "readerFacingScore": {
+    "scale": "1\u201310",
+    "lowLabel": "Less similar to higher-concern training images",
+    "highLabel": "More similar to higher-concern training images",
+    "isCancerProbability": false
+  }
+}
