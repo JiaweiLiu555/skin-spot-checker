@@ -6,12 +6,18 @@ An educational computer-vision project that analyzes a **clinical close-up image
 
 The current PWA is **Mega Version 2.0**. It keeps the verified Version 1.6
 input gate and Version 1.5 concern ensemble, and adds a real model-evidence
-graph plus an optional contour-CNN occlusion-sensitivity map.
+graph plus an optional contour-CNN occlusion-sensitivity map. The iPhone
+presentation path also includes a zero-neural-runtime visual-analysis mode
+with a region-of-interest overlay and a five-feature graph.
 
 ## Included applications
 
 1. `app.py`: a Python/Streamlit research interface.
-2. `web/`: an iPhone-friendly progressive web app for Netlify. It runs the exported model locally in the browser through ONNX Runtime Web, so the app does not intentionally upload the selected image.
+2. `web/`: an iPhone-friendly progressive web app for Netlify. All processing
+   stays in the browser. Desktop mode runs the exported ONNX models; the
+   presentation-safe iPhone mode runs lightweight visual features without
+   loading the neural runtime. The app does not intentionally upload the
+   selected image.
 
 ## Model and data
 
@@ -175,20 +181,22 @@ contour CNN. See `reports/mega_app_dermascope_audit_2026-07-28.md`.
 
 ### iPhone memory-safe presentation mode
 
-Safari on some iPhones exhausted its WebAssembly heap after loading the input
-gate plus three concern models. Mega now automatically uses the validated
-contour-aware CNN by itself on iPhone/iPad, skipping the separate learned gate
-and redundant RGB members. The lightweight image-quality and centered-spot
-checks still run before inference. Macs and desktop browsers retain the full
-path.
+Safari on some iPhones exhausted its WebAssembly heap, and WebGL startup also
+stalled on at least one deployed-browser test. Mega therefore defaults to a
+presentation-safe visual-analysis path on iPhone/iPad. It loads no neural
+runtime and cannot trigger the model-memory error. It shows the detected
+region plus shape, border, color, contrast, and texture bars. These
+deterministic features are explicitly labeled as not the trained CNN and not a
+cancer probability. Macs and desktop browsers retain the trained full path.
 
 On the patient-separated PAD-UFES-20 phone development test, this mode reached
 91.9% sensitivity, 36.5% specificity, balanced accuracy 64.2%, ROC-AUC 0.855,
 and flagged 4/4 melanoma images. The melanoma subgroup is too small for a
 stable claim. The full ensemble’s comparison AUC was 0.864.
 
-For debugging, `?mode=minimal`, `?mode=lite`, and `?mode=full` explicitly
-select the one-, two-, or full-model path.
+For debugging, `?mode=compat`, `?mode=minimal`, `?mode=lite`, and `?mode=full`
+explicitly select the zero-runtime visual path or the one-, two-, or
+full-model path.
 
 ## Export for the iPhone web app
 
@@ -205,9 +213,9 @@ session before loading the next, so iPhone/iPad Safari avoids holding all model
 graphs in memory at once. It also downsizes a temporary browser-only working
 copy of large phone photos; the original photo is never uploaded.
 
-The default runtime is single-threaded WASM. WebGL remains available with
-`?runtime=webgl` for troubleshooting, but is not the default because the
-three-member graph compilation stalled in a deployed browser test.
+The trained desktop path defaults to single-threaded WASM. WebGL remains
+available with `?runtime=webgl` for troubleshooting. The default iPhone path
+does not import either neural runtime.
 
 The exporter compares PyTorch and ONNX outputs and fails if they differ beyond tolerance.
 

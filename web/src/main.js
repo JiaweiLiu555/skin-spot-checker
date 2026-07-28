@@ -75,6 +75,11 @@ app.innerHTML = `
         <strong id="decision-value"></strong>
       </div>
       <p class="score-warning"><strong>The 1–10 score is not a cancer probability.</strong> It summarizes the strength of fused evidence from the three-model ensemble.</p>
+      <section id="focus-panel" class="focus-panel hidden" aria-label="Image-analysis focus">
+        <h3>Where the image analysis is focused</h3>
+        <p>The yellow box and warm overlay show the lesion-like region isolated by lightweight computer vision. This helps catch framing mistakes; it is not Grad-CAM, proof of cancer, or a clinical explanation.</p>
+        <canvas id="focus-canvas" class="focus-canvas" aria-label="Photo with analyzed region highlighted"></canvas>
+      </section>
       <section id="evidence-panel" class="evidence-panel hidden" aria-label="Model evidence graph">
         <h3>Model evidence graph</h3>
         <p>Each bar shows that member’s output rank relative to its validation reference images. These are model signals, not cancer probabilities.</p>
@@ -114,7 +119,7 @@ app.innerHTML = `
     </section>
   </main>
 
-  <footer>For education and research only · On-device model ensemble · Mega Version 2.0</footer>
+  <footer>For education and research only · On-device computer vision · Mega Version 2.0</footer>
 `;
 
 const inputs = Array.from(document.querySelectorAll('input[type="file"]'));
@@ -138,12 +143,17 @@ const isIOS =
   (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 const requestedMode = queryParameters.get("mode");
 const inferenceMode =
-  requestedMode === "full" || requestedMode === "lite" || requestedMode === "minimal"
+  requestedMode === "full" ||
+  requestedMode === "lite" ||
+  requestedMode === "minimal" ||
+  requestedMode === "compat"
     ? requestedMode
     : isIOS
-      ? "minimal"
+      ? "compat"
       : "full";
-const useWebGl = queryParameters.get("runtime") === "webgl";
+const useWebGl =
+  queryParameters.get("runtime") === "webgl" ||
+  (isIOS && queryParameters.get("runtime") !== "wasm");
 
 function loadRuntime() {
   if (!runtimePromise) {
@@ -177,7 +187,7 @@ function loadPresenceMetadata() {
 }
 
 function loadCompactEnsemble() {
-  if (inferenceMode === "full") return Promise.resolve(null);
+  if (inferenceMode === "full" || inferenceMode === "compat") return Promise.resolve(null);
   const filename =
     inferenceMode === "lite" ? "mega-lite-ensemble.json" : "mega-minimal-ensemble.json";
   compactEnsemblePromise ??= fetch(`/model/${filename}?v=2.0.1-memory-fix`, {
@@ -365,9 +375,247 @@ function fuseModelScores(baseScores, metadata) {
   };
 }
 
+function clamp01(value) {
+  return Math.max(0, Math.min(1, value));
+}
+
+function analyzeVisualFeatures(image) {
+  const size = 128;
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const context = canvas.getContext("2d", { willReadFrequently: true });
+  context.drawImage(image, 0, 0, size, size);
+  const pixels = context.getImageData(0, 0, size, size).data;
+  const gray = new Float32Array(size * size);
+  let borderR = 0;
+  let borderG = 0;
+  let borderB = 0;
+  let borderCount = 0;
+  for (let y = 0; y < size; y += 1) {
+    for (let x = 0; x < size; x += 1) {
+      const index = y * size + x;
+      const source = index * 4;
+      const r = pixels[source];
+      const g = pixels[source + 1];
+      const b = pixels[source + 2];
+      gray[index] = 0.299 * r + 0.587 * g + 0.114 * b;
+      if (x < 15 || y < 15 || x >= size - 15 || y >= size - 15) {
+        borderR += r;
+        borderG += g;
+        borderB += b;
+        borderCount += 1;
+      }
+    }
+  }
+  borderR /= borderCount;
+  borderG /= borderCount;
+  borderB /= borderCount;
+
+  const saliency = new Float32Array(size * size);
+  const sortedSaliency = [];
+  for (let y = 0; y < size; y += 1) {
+    for (let x = 0; x < size; x += 1) {
+      const index = y * size + x;
+      const source = index * 4;
+      const dr = pixels[source] - borderR;
+      const dg = pixels[source + 1] - borderG;
+      const db = pixels[source + 2] - borderB;
+      const colorDistance = Math.sqrt(dr * dr + dg * dg + db * db) / 441.7;
+      const nx = (x - size / 2) / (size / 2);
+      const ny = (y - size / 2) / (size / 2);
+      const centerPrior = 0.3 + 0.7 * Math.exp(-(nx * nx + ny * ny) / 0.42);
+      saliency[index] = colorDistance * centerPrior;
+      sortedSaliency.push(saliency[index]);
+    }
+  }
+  sortedSaliency.sort((a, b) => a - b);
+  const threshold = Math.max(0.045, sortedSaliency[Math.floor(sortedSaliency.length * 0.82)]);
+  const candidate = new Uint8Array(size * size);
+  for (let index = 0; index < candidate.length; index += 1) {
+    candidate[index] = saliency[index] >= threshold ? 1 : 0;
+  }
+
+  const visited = new Uint8Array(size * size);
+  const stack = new Int32Array(size * size);
+  let best = null;
+  for (let seed = 0; seed < candidate.length; seed += 1) {
+    if (!candidate[seed] || visited[seed]) continue;
+    let stackSize = 0;
+    stack[stackSize++] = seed;
+    visited[seed] = 1;
+    const indices = [];
+    let sumX = 0;
+    let sumY = 0;
+    let sumStrength = 0;
+    let minX = size;
+    let minY = size;
+    let maxX = 0;
+    let maxY = 0;
+    while (stackSize > 0) {
+      const index = stack[--stackSize];
+      const x = index % size;
+      const y = Math.floor(index / size);
+      indices.push(index);
+      sumX += x;
+      sumY += y;
+      sumStrength += saliency[index];
+      minX = Math.min(minX, x);
+      minY = Math.min(minY, y);
+      maxX = Math.max(maxX, x);
+      maxY = Math.max(maxY, y);
+      const neighbors = [index - 1, index + 1, index - size, index + size];
+      for (const neighbor of neighbors) {
+        if (neighbor < 0 || neighbor >= candidate.length || visited[neighbor] || !candidate[neighbor]) continue;
+        const neighborX = neighbor % size;
+        if (Math.abs(neighborX - x) > 1) continue;
+        visited[neighbor] = 1;
+        stack[stackSize++] = neighbor;
+      }
+    }
+    if (indices.length < 10) continue;
+    const centroidX = sumX / indices.length;
+    const centroidY = sumY / indices.length;
+    const dx = (centroidX - size / 2) / (size / 2);
+    const dy = (centroidY - size / 2) / (size / 2);
+    const centrality = 0.25 + 0.75 * Math.exp(-(dx * dx + dy * dy) / 0.35);
+    const componentScore = sumStrength * centrality * Math.min(1, indices.length / 45);
+    if (!best || componentScore > best.componentScore) {
+      best = { indices, centroidX, centroidY, minX, minY, maxX, maxY, componentScore };
+    }
+  }
+
+  if (!best) {
+    const indices = [];
+    for (let y = 42; y < 86; y += 1) {
+      for (let x = 42; x < 86; x += 1) indices.push(y * size + x);
+    }
+    best = {
+      indices,
+      centroidX: 64,
+      centroidY: 64,
+      minX: 42,
+      minY: 42,
+      maxX: 85,
+      maxY: 85,
+      componentScore: 0,
+    };
+  }
+
+  const mask = new Uint8Array(size * size);
+  for (const index of best.indices) mask[index] = 1;
+  const area = best.indices.length;
+  let perimeter = 0;
+  let mismatch = 0;
+  let colorTotal = 0;
+  let colorSquaredTotal = 0;
+  let contrastTotal = 0;
+  let textureTotal = 0;
+  let textureCount = 0;
+  const centerX = (best.minX + best.maxX) / 2;
+  const centerY = (best.minY + best.maxY) / 2;
+  for (const index of best.indices) {
+    const x = index % size;
+    const y = Math.floor(index / size);
+    const source = index * 4;
+    const channels = [pixels[source], pixels[source + 1], pixels[source + 2]];
+    for (const channel of channels) {
+      colorTotal += channel;
+      colorSquaredTotal += channel * channel;
+    }
+    contrastTotal += saliency[index] / Math.max(0.3, 0.3 + 0.7 * Math.exp(
+      -((((x - 64) / 64) ** 2 + ((y - 64) / 64) ** 2) / 0.42),
+    ));
+    const neighbors = [index - 1, index + 1, index - size, index + size];
+    for (const neighbor of neighbors) {
+      if (neighbor < 0 || neighbor >= mask.length || !mask[neighbor]) perimeter += 1;
+    }
+    if (x + 1 < size && mask[index + 1]) {
+      textureTotal += Math.abs(gray[index] - gray[index + 1]);
+      textureCount += 1;
+    }
+    const mirrorX = Math.round(2 * centerX - x);
+    const mirrorY = Math.round(2 * centerY - y);
+    const horizontalMatch =
+      mirrorX >= 0 && mirrorX < size ? mask[y * size + mirrorX] : 0;
+    const verticalMatch =
+      mirrorY >= 0 && mirrorY < size ? mask[mirrorY * size + x] : 0;
+    mismatch += (horizontalMatch ? 0 : 1) + (verticalMatch ? 0 : 1);
+  }
+  const colorSamples = area * 3;
+  const colorMean = colorTotal / Math.max(1, colorSamples);
+  const colorStd = Math.sqrt(
+    Math.max(0, colorSquaredTotal / Math.max(1, colorSamples) - colorMean * colorMean),
+  );
+  const compactness = (perimeter * perimeter) / Math.max(1, 4 * Math.PI * area);
+  const features = {
+    asymmetry: clamp01(mismatch / Math.max(1, 2 * area)),
+    border: clamp01((compactness - 1) / 7),
+    color: clamp01(colorStd / 65),
+    contrast: clamp01((contrastTotal / Math.max(1, area)) * 2.4),
+    texture: clamp01((textureTotal / Math.max(1, textureCount)) / 42),
+  };
+  const irregularity =
+    0.28 * features.asymmetry +
+    0.28 * features.border +
+    0.22 * features.color +
+    0.12 * features.texture +
+    0.1 * features.contrast;
+  const score = Math.max(1, Math.min(10, Math.round(1 + 9 * clamp01(irregularity * 1.18))));
+  return { canvas, mask, saliency, threshold, best, features, score };
+}
+
+function renderFocusMap(analysis) {
+  const canvas = document.querySelector("#focus-canvas");
+  const context = canvas.getContext("2d");
+  const outputSize = 600;
+  const sourceSize = analysis.canvas.width;
+  canvas.width = outputSize;
+  canvas.height = outputSize;
+  context.drawImage(analysis.canvas, 0, 0, outputSize, outputSize);
+
+  const overlay = document.createElement("canvas");
+  overlay.width = sourceSize;
+  overlay.height = sourceSize;
+  const overlayContext = overlay.getContext("2d");
+  const overlayData = overlayContext.createImageData(sourceSize, sourceSize);
+  let maximum = analysis.threshold + 1e-5;
+  for (const value of analysis.saliency) maximum = Math.max(maximum, value);
+  for (let index = 0; index < analysis.mask.length; index += 1) {
+    if (!analysis.mask[index]) continue;
+    const alpha = 70 + Math.round(110 * clamp01(analysis.saliency[index] / maximum));
+    overlayData.data[index * 4] = 255;
+    overlayData.data[index * 4 + 1] = 82;
+    overlayData.data[index * 4 + 2] = 45;
+    overlayData.data[index * 4 + 3] = alpha;
+  }
+  overlayContext.putImageData(overlayData, 0, 0);
+  context.drawImage(overlay, 0, 0, outputSize, outputSize);
+
+  const scale = outputSize / sourceSize;
+  const box = analysis.best;
+  const padding = 5;
+  const x = Math.max(0, (box.minX - padding) * scale);
+  const y = Math.max(0, (box.minY - padding) * scale);
+  const width = Math.min(outputSize - x, (box.maxX - box.minX + padding * 2) * scale);
+  const height = Math.min(outputSize - y, (box.maxY - box.minY + padding * 2) * scale);
+  context.strokeStyle = "#ffd24d";
+  context.lineWidth = 7;
+  context.strokeRect(x, y, width, height);
+  context.fillStyle = "#ffd24d";
+  context.fillRect(x, Math.max(0, y - 30), 168, 30);
+  context.fillStyle = "#2b2600";
+  context.font = "700 18px system-ui, sans-serif";
+  context.fillText("region analyzed", x + 9, Math.max(21, y - 9));
+  document.querySelector("#focus-panel").classList.remove("hidden");
+}
+
 function renderEvidenceGraph(baseScores, fusedScores, metadata) {
   const panel = document.querySelector("#evidence-panel");
   const bars = document.querySelector("#evidence-bars");
+  panel.querySelector("h3").textContent = "Model evidence graph";
+  panel.querySelector("p").textContent =
+    "Each bar shows that member’s output rank relative to its validation reference images. These are model signals, not cancer probabilities.";
   const referenceSets = metadata.fusion.heads.higher_concern.rank_references;
   const entries = baseScores.map((scores, index) => ({
     label: modelLabel(metadata.models[index]),
@@ -391,6 +639,34 @@ function renderEvidenceGraph(baseScores, fusedScores, metadata) {
   document.querySelector("#sensitivity-details").classList.remove("hidden");
 }
 
+function renderFeatureGraph(features) {
+  const panel = document.querySelector("#evidence-panel");
+  const bars = document.querySelector("#evidence-bars");
+  panel.querySelector("h3").textContent = "Visual feature graph";
+  panel.querySelector("p").textContent =
+    "Compatibility mode compares visible shape, border, color, contrast, and texture. These are educational image features—not CNN outputs or cancer probabilities.";
+  const entries = [
+    ["Asymmetry", features.asymmetry],
+    ["Border irregularity", features.border],
+    ["Color variation", features.color],
+    ["Lesion contrast", features.contrast],
+    ["Texture variation", features.texture],
+  ];
+  bars.innerHTML = entries
+    .map(
+      ([label, value]) => `
+        <div class="evidence-row">
+          <div class="evidence-label"><span>${label}</span><strong>${Math.round(value * 100)}</strong></div>
+          <div class="evidence-track" aria-label="${label}: ${Math.round(value * 100)} out of 100">
+            <span style="width:${Math.max(2, value * 100)}%"></span>
+          </div>
+        </div>`,
+    )
+    .join("");
+  panel.classList.remove("hidden");
+  document.querySelector("#sensitivity-details").classList.add("hidden");
+}
+
 function normalizedThresholdDistance(score, threshold) {
   const boundedThreshold = Math.min(1 - 1e-6, Math.max(1e-6, threshold));
   return score >= boundedThreshold
@@ -399,6 +675,16 @@ function normalizedThresholdDistance(score, threshold) {
 }
 
 function showResult(scores, metadata, baseScores) {
+  document.querySelector(".concern-score").setAttribute(
+    "aria-label",
+    "Pattern-concern score from 1 to 10",
+  );
+  document.querySelector(".concern-score-heading > span").textContent = "Pattern-concern score";
+  const scoreEndpoints = document.querySelectorAll(".score-endpoints span");
+  scoreEndpoints[0].innerHTML =
+    "<strong>1</strong> · Less similar to higher-concern training images";
+  scoreEndpoints[1].innerHTML =
+    "<strong>10</strong> · More similar to higher-concern training images";
   document.querySelector(".concern-score").classList.remove("hidden");
   document.querySelector(".decision-row").classList.remove("hidden");
   document.querySelector(".score-warning").classList.remove("hidden");
@@ -463,12 +749,59 @@ function showNoVisibleSpotResult(score, metadata) {
   document.querySelector(".decision-row").classList.add("hidden");
   document.querySelector(".score-warning").classList.add("hidden");
   document.querySelector("#evidence-panel").classList.add("hidden");
+  document.querySelector("#focus-panel").classList.add("hidden");
   document.querySelector("#sensitivity-details").classList.add("hidden");
   document.querySelector(".technical-details").classList.remove("hidden");
   document.querySelector("#threshold-note").textContent =
     `Visible-spot model output ${(score * 100).toFixed(1)}% ` +
     `(validation-selected threshold ${(metadata.threshold * 100).toFixed(1)}%). ` +
     "This output only routes the image; it is not a cancer probability.";
+  resultCard.classList.remove("hidden");
+  resultCard.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function showCompatibilityResult(analysis, backendUnavailable = true) {
+  const reviewRecommended = analysis.score >= 6;
+  const badge = document.querySelector("#result-badge");
+  badge.textContent = backendUnavailable
+    ? "Compatibility analysis"
+    : "On-device visual analysis";
+  badge.className = `result-badge ${reviewRecommended ? "higher" : "lower"}`;
+  document.querySelector("#result-title").textContent = reviewRecommended
+    ? "Visual review recommended"
+    : "No strong visual-irregularity flag";
+  const completionCopy = backendUnavailable
+    ? "The trained model backend was unavailable, so the app completed"
+    : "This iPhone-safe mode completed";
+  document.querySelector("#result-copy").textContent = reviewRecommended
+    ? `${completionCopy} with lightweight shape, border, color, contrast, and texture analysis. Several visible features were irregular. This is educational image analysis, not a diagnosis.`
+    : `${completionCopy} with lightweight visual-feature analysis. It did not find a strong irregularity flag, but this cannot rule out cancer.`;
+  document.querySelector(".concern-score").setAttribute(
+    "aria-label",
+    "Visual-irregularity score from 1 to 10",
+  );
+  document.querySelector(".concern-score-heading > span").textContent =
+    "Visual-irregularity score";
+  const scoreEndpoints = document.querySelectorAll(".score-endpoints span");
+  scoreEndpoints[0].innerHTML = "<strong>1</strong> · Fewer visible irregularities";
+  scoreEndpoints[1].innerHTML = "<strong>10</strong> · More visible irregularities";
+  document.querySelector(".concern-score").classList.remove("hidden");
+  document.querySelector("#concern-score-value").textContent = analysis.score;
+  document.querySelector("#score-fill").style.width = `${((analysis.score - 1) / 9) * 100}%`;
+  document.querySelector(".decision-row").classList.remove("hidden");
+  document.querySelector("#decision-value").textContent = reviewRecommended
+    ? "Visual feature flag"
+    : "No strong visual flag";
+  document.querySelector(".score-warning").classList.remove("hidden");
+  document.querySelector(".score-warning").innerHTML =
+    "<strong>Compatibility mode is not the trained cancer model.</strong> " +
+    "Its 1–10 number summarizes visible image irregularity and is not a cancer probability.";
+  document.querySelector(".technical-details").classList.remove("hidden");
+  document.querySelector("#threshold-note").textContent = backendUnavailable
+    ? "The neural-network backend was unavailable. The app used deterministic, on-device image features so the analysis and visualization could still complete. No clinical sensitivity or specificity is claimed for this fallback."
+    : "iPhone presentation mode avoids loading the large neural-network runtime. It uses deterministic, on-device image features and always shows the region and graph. No clinical sensitivity or specificity is claimed for this mode.";
+  renderFeatureGraph(analysis.features);
+  document.querySelector("#sensitivity-details").classList.add("hidden");
   resultCard.classList.remove("hidden");
   resultCard.scrollIntoView({ behavior: "smooth", block: "start" });
 }
@@ -521,6 +854,7 @@ function drawSensitivityMap(deltas) {
 
 function resetExplainability() {
   latestAnalysis = null;
+  document.querySelector("#focus-panel").classList.add("hidden");
   document.querySelector("#evidence-panel").classList.add("hidden");
   document.querySelector("#sensitivity-details").classList.add("hidden");
   document.querySelector("#sensitivity-canvas").classList.add("hidden");
@@ -608,7 +942,23 @@ analyzeButton.addEventListener("click", async () => {
   if (!selectedImage) return;
   analyzeButton.disabled = true;
   analyzeButton.textContent = "Loading model…";
+  let visualAnalysis = null;
   try {
+    visualAnalysis = analyzeVisualFeatures(selectedImage);
+    renderFocusMap(visualAnalysis);
+  } catch {
+    document.querySelector("#focus-panel").classList.add("hidden");
+  }
+  try {
+    if (inferenceMode === "compat") {
+      if (!visualAnalysis) {
+        throw new Error("The visual analysis could not process this image.");
+      }
+      showCompatibilityResult(visualAnalysis, false);
+      qualityMessage.textContent = "Analysis completed on this device.";
+      qualityMessage.className = "quality-good";
+      return;
+    }
     const [sourceMetadata, compactEnsemble, runtime] = await Promise.all([
       loadMetadata(),
       loadCompactEnsemble(),
@@ -656,11 +1006,16 @@ analyzeButton.addEventListener("click", async () => {
     latestAnalysis = { metadata, baseScores };
     showResult(fusedScores, metadata, baseScores);
   } catch (error) {
-    const ranOutOfMemory = /out of memory/i.test(error.message);
-    qualityMessage.textContent = ranOutOfMemory
-      ? "The memory-safe model could not start. Reload this page once so Safari releases the previous model."
-      : `The model could not run: ${error.message}`;
-    qualityMessage.className = "quality-bad";
+    if (visualAnalysis) {
+      showCompatibilityResult(visualAnalysis);
+      qualityMessage.textContent =
+        "Analysis completed in compatibility mode on this device.";
+      qualityMessage.className = "quality-good";
+    } else {
+      qualityMessage.textContent =
+        "This image could not be analyzed. Choose another clear, centered photo.";
+      qualityMessage.className = "quality-bad";
+    }
   } finally {
     analyzeButton.disabled = false;
     analyzeButton.textContent = "Analyze on this device";
@@ -686,6 +1041,7 @@ if ("serviceWorker" in navigator) {
 }
 
 window.addEventListener("load", () => {
+  if (inferenceMode === "compat") return;
   const preload = () => Promise.all([loadMetadata(), loadRuntime()]).catch(() => {});
   if ("requestIdleCallback" in window) window.requestIdleCallback(preload, { timeout: 1500 });
   else window.setTimeout(preload, 500);

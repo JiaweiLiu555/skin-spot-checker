@@ -1,4 +1,4 @@
-const CACHE = "ai4all-skin-spot-checker-mega-v20-2-memory-fix";
+const CACHE = "ai4all-skin-spot-checker-mega-v20-4-presentation-safe";
 const SHELL = ["/", "/manifest.webmanifest", "/icon.svg"];
 
 self.addEventListener("install", (event) => {

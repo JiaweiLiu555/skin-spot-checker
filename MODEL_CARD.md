@@ -13,11 +13,14 @@ device, is not clinically validated, and cannot diagnose or rule out cancer.
 The PWA presentation layer is Mega Version 2.0. It does not change the locked
 concern ensemble or its thresholds.
 
-On iPhone/iPad, Mega automatically uses a separately validation-fitted
-single-member fusion policy around the contour-aware CNN to avoid Safari
-WebAssembly out-of-memory failures. Its phone development-test ROC-AUC was
-0.855 versus 0.864 for the full browser ensemble; sensitivity was 0.919 and
-specificity 0.365. The full ensemble remains the default on desktop.
+On iPhone/iPad, Mega defaults to a zero-neural-runtime presentation path to
+avoid Safari WebAssembly memory failures and WebGL startup stalls. That path
+shows a deterministic region-of-interest overlay plus shape, border, color,
+contrast, and texture bars. It is not the trained CNN and has no claimed
+clinical sensitivity, specificity, or ROC-AUC. The full trained ensemble
+remains the default on desktop. A separately validated one-member CNN path is
+still available for controlled testing; its phone development-test ROC-AUC
+was 0.855, sensitivity 0.919, and specificity 0.365.
 
 ## Intended use
 
@@ -106,12 +109,16 @@ variability remains future work.
   not a cancer probability.
 - Performs browser inference on-device in the Netlify PWA
 - Loads and releases the three ONNX members sequentially to limit peak browser memory
-- Uses only the contour-aware member on iPhone/iPad so a presentation can run
-  within Safari’s smaller WebAssembly memory allowance
+- Defaults to a zero-neural-runtime visual-analysis path on iPhone/iPad so the
+  presentation does not depend on Safari allocating a large model heap
+- Labels that iPhone path as deterministic visual features rather than the
+  trained CNN and makes no clinical performance claim for it
 - Shows each real base member’s validation-relative rank in a model-evidence
   graph; none of the bars is a cancer probability
 - Offers an optional 3 × 3 occlusion-sensitivity map for the real contour CNN.
   The map is an educational/debugging aid, not a clinical explanation.
+- Shows a region-of-interest overlay and a five-feature graph in the
+  presentation-safe iPhone path; this overlay is not Grad-CAM.
 
 ## Limitations
 

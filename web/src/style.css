@@ -190,6 +190,7 @@ main {
 }
 .technical-details { margin-top: 0.45rem; }
 .technical-details .fine-print { text-align: left; }
+.focus-panel,
 .evidence-panel {
   margin-top: 1rem;
   padding: 1rem;
@@ -197,7 +198,14 @@ main {
   border-radius: 16px;
   background: #f8fbfa;
 }
+.focus-panel > p,
 .evidence-panel > p { margin-bottom: 0.85rem; font-size: 0.82rem; }
+.focus-canvas {
+  display: block;
+  width: 100%;
+  border-radius: 14px;
+  background: #dfe7e5;
+}
 .evidence-bars { display: grid; gap: 0.75rem; }
 .evidence-label { display: flex; justify-content: space-between; gap: 0.75rem; margin-bottom: 0.28rem; font-size: 0.78rem; }
 .evidence-label strong { color: var(--teal-dark); }
