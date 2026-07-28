@@ -1,0 +1,38 @@
+{
+  "version": "1.6",
+  "architecture": "mobilenet_v3_small_lesion_presence",
+  "url": "/model/lesion-presence-mobilenet-v3-small.onnx",
+  "inputName": "pixel_values",
+  "outputName": "logit",
+  "imageSize": 192,
+  "mean": [
+    0.485,
+    0.456,
+    0.406
+  ],
+  "std": [
+    0.229,
+    0.224,
+    0.225
+  ],
+  "threshold": 0.23809483647346497,
+  "validationMetrics": {
+    "sensitivity": 0.9548022598870056,
+    "specificity": 0.9504132231404959,
+    "balanced_accuracy": 0.9526077415137508,
+    "epoch": 5,
+    "loss": 0.14569731702407202,
+    "roc_auc": 0.9792921510949247,
+    "threshold": 0.23809483647346497
+  },
+  "positiveMeaning": "a visible centered lesion or growth is present",
+  "negativeMeaning": "no clear centered lesion was detected",
+  "trainingSources": [
+    "SCIN participant-submitted phone images",
+    "PAD-UFES-20 phone lesion images",
+    "SLICE-3D total-body lesion crops"
+  ],
+  "limitations": "This is an input-routing model, not a cancer classifier. SCIN LOOKS_HEALTHY is a participant annotation, not pathology-confirmed normal skin.",
+  "onnxMaxAbsoluteError": 6.705522537231445e-07,
+  "sizeBytes": 6116209
+}

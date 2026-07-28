@@ -1,4 +1,4 @@
-const CACHE = "ai4all-skin-spot-checker-v5";
+const CACHE = "ai4all-skin-spot-checker-mega-v20-1";
 const SHELL = ["/", "/manifest.webmanifest", "/icon.svg"];
 
 self.addEventListener("install", (event) => {
@@ -15,6 +15,24 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
+  const requestUrl = new URL(event.request.url);
+  if (
+    requestUrl.pathname === "/model/model-metadata.json" ||
+    requestUrl.pathname === "/model/lesion-presence-metadata.json"
+  ) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          if (response.ok) {
+            const copy = response.clone();
+            caches.open(CACHE).then((cache) => cache.put(event.request, copy));
+          }
+          return response;
+        })
+        .catch(() => caches.match(event.request)),
+    );
+    return;
+  }
   if (event.request.mode === "navigate") {
     event.respondWith(
       fetch(event.request)

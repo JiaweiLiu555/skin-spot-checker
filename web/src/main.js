@@ -1,4 +1,10 @@
 import "./style.css";
+import {
+  LESION_PRESENCE_THRESHOLD,
+  lesionPresenceEvidence,
+  patternConcernScore,
+  screeningDecision,
+} from "./screening-policy.js";
 
 const app = document.querySelector("#app");
 
@@ -6,7 +12,7 @@ app.innerHTML = `
   <header class="topbar">
     <img class="brand-mark" src="/icon.svg" alt="" />
     <div>
-      <p class="eyebrow">AI4ALL MEDICAL AI</p>
+      <p class="eyebrow">AI4ALL MEDICAL AI · MEGA</p>
       <h1>Skin Spot Checker</h1>
     </div>
   </header>
@@ -68,7 +74,23 @@ app.innerHTML = `
         <span>Screening flag</span>
         <strong id="decision-value"></strong>
       </div>
-      <p class="score-warning"><strong>The 1–10 score is not a cancer probability.</strong> It shows how far the model output is below or above its validation-selected review cutoff.</p>
+      <p class="score-warning"><strong>The 1–10 score is not a cancer probability.</strong> It summarizes the strength of fused evidence from the three-model ensemble.</p>
+      <section id="evidence-panel" class="evidence-panel hidden" aria-label="Model evidence graph">
+        <h3>Model evidence graph</h3>
+        <p>Each bar shows that member’s output rank relative to its validation reference images. These are model signals, not cancer probabilities.</p>
+        <div id="evidence-bars" class="evidence-bars"></div>
+      </section>
+      <details id="sensitivity-details" class="sensitivity-details hidden">
+        <summary>Show where the contour CNN is sensitive</summary>
+        <p>This optional 3 × 3 occlusion test hides one image region at a time and measures how much the contour model’s output changes. It is a coarse debugging/education aid—not a clinical explanation and not proof that a highlighted region is cancer.</p>
+        <button id="sensitivity-button" class="secondary-button compact-button" type="button">Generate sensitivity map</button>
+        <p id="sensitivity-status" class="fine-print"></p>
+        <canvas id="sensitivity-canvas" class="sensitivity-canvas hidden" aria-label="Contour-model occlusion sensitivity map"></canvas>
+        <div id="sensitivity-legend" class="sensitivity-legend hidden">
+          <span><i class="legend-warm"></i>Hiding this area lowered concern evidence</span>
+          <span><i class="legend-cool"></i>Hiding this area raised concern evidence</span>
+        </div>
+      </details>
       <details class="technical-details">
         <summary>Show technical model outputs</summary>
         <p id="threshold-note" class="fine-print"></p>
@@ -79,7 +101,7 @@ app.innerHTML = `
     <section class="card details">
       <details>
         <summary>What does this result mean?</summary>
-        <p>The contour-aware CNN compares both color patterns and lesion-border structure with labeled clinical and phone close-up images. “Above cutoff” means the image crossed a validation-selected screening threshold. It does not estimate the chance that you have cancer, and the model has not been clinically validated.</p>
+        <p>The v1.6 input gate first checks that the photo contains a visible centered skin spot. If it does, the three-member ensemble combines a contour-aware model for border and shape patterns with two independent RGB models for color, texture, and broader morphology. The 1–10 display reflects fused ensemble evidence, not cancer probability.</p>
       </details>
       <details>
         <summary>When should I seek care?</summary>
@@ -92,7 +114,7 @@ app.innerHTML = `
     </section>
   </main>
 
-  <footer>For education and research only · Contour-aware on-device CNN · Version 1.3</footer>
+  <footer>For education and research only · On-device model ensemble · Mega Version 2.0</footer>
 `;
 
 const inputs = Array.from(document.querySelectorAll('input[type="file"]'));
@@ -104,14 +126,12 @@ const resultCard = document.querySelector("#result-card");
 const resetButton = document.querySelector("#reset-button");
 
 let selectedImage = null;
-let sessionPromise = null;
 let metadataPromise = null;
+let presenceMetadataPromise = null;
 let runtimePromise = null;
+let latestAnalysis = null;
 
-const isAppleMobile =
-  /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-  (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-const useWebGl = isAppleMobile || new URLSearchParams(window.location.search).get("runtime") === "webgl";
+const useWebGl = new URLSearchParams(window.location.search).get("runtime") === "webgl";
 
 function loadRuntime() {
   if (!runtimePromise) {
@@ -127,24 +147,32 @@ function loadRuntime() {
 }
 
 function loadMetadata() {
-  metadataPromise ??= fetch("/model/model-metadata.json", { cache: "no-cache" }).then((response) => {
+  metadataPromise ??= fetch("/model/model-metadata.json?v=1.6.0-release-1", { cache: "no-store" }).then((response) => {
     if (!response.ok) throw new Error("Model metadata is unavailable.");
     return response.json();
   });
   return metadataPromise;
 }
 
-function loadSession() {
-  sessionPromise ??= loadRuntime().then((runtime) =>
-    runtime.InferenceSession.create("/model/skin-lesion-classifier.onnx", {
-      executionProviders: [useWebGl ? "webgl" : "wasm"],
-      graphOptimizationLevel: useWebGl ? "all" : "basic",
-      enableCpuMemArena: false,
-      enableMemPattern: false,
-      executionMode: "sequential",
-    }),
-  );
-  return sessionPromise;
+function loadPresenceMetadata() {
+  presenceMetadataPromise ??= fetch("/model/lesion-presence-metadata.json?v=1.6.0-release-1", {
+    cache: "no-store",
+  }).then((response) => {
+    if (!response.ok) throw new Error("Visible-spot model metadata is unavailable.");
+    return response.json();
+  });
+  return presenceMetadataPromise;
+}
+
+async function createSession(modelUrl) {
+  const runtime = await loadRuntime();
+  return runtime.InferenceSession.create(modelUrl, {
+    executionProviders: [useWebGl ? "webgl" : "wasm"],
+    graphOptimizationLevel: useWebGl ? "all" : "basic",
+    enableCpuMemArena: false,
+    enableMemPattern: false,
+    executionMode: "sequential",
+  });
 }
 
 function checkImage(image) {
@@ -161,6 +189,7 @@ function checkImage(image) {
   const context = canvas.getContext("2d", { willReadFrequently: true });
   context.drawImage(image, 0, 0, 128, 128);
   const pixels = context.getImageData(0, 0, 128, 128).data;
+  const lesionEvidence = lesionPresenceEvidence(pixels, 128, 128);
   const gray = new Float32Array(128 * 128);
   let brightnessTotal = 0;
   for (let index = 0; index < gray.length; index += 1) {
@@ -192,6 +221,12 @@ function checkImage(image) {
   const edgeVariance = edgeSquaredTotal / edgeCount - edgeMean * edgeMean;
   if (edgeVariance < 20) {
     return { accepted: false, message: "Too little visible detail—retake the photo in focus and closer to the lesion." };
+  }
+  if (lesionEvidence < LESION_PRESENCE_THRESHOLD) {
+    return {
+      accepted: false,
+      message: "No clear centered skin spot was detected. Move closer and center one visible spot before analyzing.",
+    };
   }
   return { accepted: true, message: `${image.naturalWidth} × ${image.naturalHeight} · Ready to analyze` };
 }
@@ -249,6 +284,61 @@ function sigmoid(value) {
   return 1 / (1 + Math.exp(-value));
 }
 
+function empiricalRank(score, sortedReference) {
+  let lower = 0;
+  let upper = sortedReference.length;
+  while (lower < upper) {
+    const middle = Math.floor((lower + upper) / 2);
+    if (score < sortedReference[middle]) upper = middle;
+    else lower = middle + 1;
+  }
+  return lower / sortedReference.length;
+}
+
+function fuseModelScores(baseScores, metadata) {
+  const outputNames = ["higher_concern", "melanoma"];
+  const fused = {};
+  outputNames.forEach((outputName, outputIndex) => {
+    const head = metadata.fusion.heads[outputName];
+    const logit = baseScores.reduce((total, scores, modelIndex) => {
+      const rank = empiricalRank(scores[outputIndex], head.rank_references[modelIndex]);
+      return total + head.coefficients[modelIndex] * rank;
+    }, head.intercept);
+    fused[outputName] = sigmoid(logit);
+  });
+  return {
+    higherConcern: fused.higher_concern,
+    melanoma: metadata.decisionPolicy
+      ? baseScores[metadata.decisionPolicy.melanomaModelIndex][1]
+      : fused.melanoma,
+  };
+}
+
+function renderEvidenceGraph(baseScores, fusedScores, metadata) {
+  const panel = document.querySelector("#evidence-panel");
+  const bars = document.querySelector("#evidence-bars");
+  const labels = ["Contour + shape CNN", "Clinical RGB CNN", "Phone-aware RGB CNN"];
+  const referenceSets = metadata.fusion.heads.higher_concern.rank_references;
+  const entries = baseScores.map((scores, index) => ({
+    label: labels[index] ?? metadata.models[index].name,
+    value: empiricalRank(scores[0], referenceSets[index]),
+  }));
+  entries.push({ label: "Fused ensemble evidence", value: fusedScores.higherConcern });
+  bars.innerHTML = entries
+    .map(
+      ({ label, value }, index) => `
+        <div class="evidence-row">
+          <div class="evidence-label"><span>${label}</span><strong>${Math.round(value * 100)}</strong></div>
+          <div class="evidence-track" aria-label="${label}: ${Math.round(value * 100)} out of 100">
+            <span class="${index === entries.length - 1 ? "fused" : ""}" style="width:${Math.max(2, value * 100)}%"></span>
+          </div>
+        </div>`,
+    )
+    .join("");
+  panel.classList.remove("hidden");
+  document.querySelector("#sensitivity-details").classList.remove("hidden");
+}
+
 function normalizedThresholdDistance(score, threshold) {
   const boundedThreshold = Math.min(1 - 1e-6, Math.max(1e-6, threshold));
   return score >= boundedThreshold
@@ -256,22 +346,19 @@ function normalizedThresholdDistance(score, threshold) {
     : (score - boundedThreshold) / boundedThreshold;
 }
 
-function patternConcernScore(decisionMargin) {
-  const boundedMargin = Math.max(-1, Math.min(1, decisionMargin));
-  return Math.max(1, Math.min(10, Math.round(1 + 9 * ((boundedMargin + 1) / 2))));
-}
-
-function showResult(scores, metadata) {
-  const higherConcern =
-    scores.higherConcern >= metadata.thresholds.higher_concern ||
-    scores.melanoma >= metadata.thresholds.melanoma;
+function showResult(scores, metadata, baseScores) {
+  document.querySelector(".concern-score").classList.remove("hidden");
+  document.querySelector(".decision-row").classList.remove("hidden");
+  document.querySelector(".score-warning").classList.remove("hidden");
+  document.querySelector(".technical-details").classList.remove("hidden");
+  const decision = screeningDecision(scores, metadata.thresholds);
   const decisionMargin = Math.max(
     normalizedThresholdDistance(scores.higherConcern, metadata.thresholds.higher_concern),
     normalizedThresholdDistance(scores.melanoma, metadata.thresholds.melanoma),
   );
   const nearCutoff = Math.abs(decisionMargin) < (metadata.abstentionMargin ?? 0.10);
-  const reviewRecommended = higherConcern || nearCutoff;
-  const concernScore = patternConcernScore(decisionMargin);
+  const reviewRecommended = decision.reviewRecommended || nearCutoff;
+  const concernScore = patternConcernScore(scores.higherConcern);
   const badge = document.querySelector("#result-badge");
   const title = document.querySelector("#result-title");
   const copy = document.querySelector("#result-copy");
@@ -287,7 +374,9 @@ function showResult(scores, metadata) {
   copy.textContent = nearCutoff
     ? "The output is close to the model’s cutoff. The app conservatively recommends review instead of treating a borderline image as reassuring."
     : reviewRecommended
-      ? "One or more model outputs crossed the review cutoff. Even a raw output such as 18% can be above its cutoff; it is not an 18% chance of cancer."
+      ? decision.melanomaSafetyFlag && !decision.higherConcernFlag
+        ? "The dedicated melanoma-pattern safety head crossed its conservative cutoff even though overall ensemble evidence was lower. This is a follow-up flag, not a cancer probability."
+        : "The fused ensemble output crossed the review cutoff. The 1–10 score describes model evidence and is not the chance of cancer."
       : "The model did not cross either review cutoff. False negatives occurred in testing, so this result must not reassure you about a known, changing, or concerning spot.";
   document.querySelector("#decision-value").textContent = nearCutoff
     ? "Near cutoff—flagged"
@@ -301,14 +390,132 @@ function showResult(scores, metadata) {
     `(threshold ${(metadata.thresholds.higher_concern * 100).toFixed(1)}%); ` +
     `melanoma-pattern model output ${(scores.melanoma * 100).toFixed(1)}% ` +
     `(threshold ${(metadata.thresholds.melanoma * 100).toFixed(1)}%). ` +
-    "These uncalibrated outputs are shown only for project transparency and are not cancer probabilities.";
+    "The 1–10 display uses only fused ensemble evidence; these raw technical outputs are not cancer probabilities.";
+  renderEvidenceGraph(baseScores, scores, metadata);
   resultCard.classList.remove("hidden");
   resultCard.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function showNoVisibleSpotResult(score, metadata) {
+  const badge = document.querySelector("#result-badge");
+  badge.textContent = "No clear spot detected";
+  badge.className = "result-badge lower";
+  document.querySelector("#result-title").textContent = "Center one visible skin spot";
+  document.querySelector("#result-copy").textContent =
+    "The input model did not find enough evidence of a centered lesion or growth, so the app did not produce a concern score. Move closer, use even light, and try again with one spot centered.";
+  document.querySelector(".concern-score").classList.add("hidden");
+  document.querySelector(".decision-row").classList.add("hidden");
+  document.querySelector(".score-warning").classList.add("hidden");
+  document.querySelector("#evidence-panel").classList.add("hidden");
+  document.querySelector("#sensitivity-details").classList.add("hidden");
+  document.querySelector(".technical-details").classList.remove("hidden");
+  document.querySelector("#threshold-note").textContent =
+    `Visible-spot model output ${(score * 100).toFixed(1)}% ` +
+    `(validation-selected threshold ${(metadata.threshold * 100).toFixed(1)}%). ` +
+    "This output only routes the image; it is not a cancer probability.";
+  resultCard.classList.remove("hidden");
+  resultCard.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function makeOccludedTensor(tensor, metadata, runtime, tileX, tileY, gridSize = 3) {
+  const size = metadata.imageSize;
+  const plane = size * size;
+  const values = new Float32Array(tensor.data);
+  const x0 = Math.floor((tileX * size) / gridSize);
+  const x1 = Math.ceil(((tileX + 1) * size) / gridSize);
+  const y0 = Math.floor((tileY * size) / gridSize);
+  const y1 = Math.ceil(((tileY + 1) * size) / gridSize);
+  for (let channel = 0; channel < 3; channel += 1) {
+    for (let y = y0; y < y1; y += 1) {
+      for (let x = x0; x < x1; x += 1) {
+        values[channel * plane + y * size + x] = 0;
+      }
+    }
+  }
+  return new runtime.Tensor("float32", values, [1, 3, size, size]);
+}
+
+function drawSensitivityMap(deltas) {
+  const canvas = document.querySelector("#sensitivity-canvas");
+  const context = canvas.getContext("2d");
+  const size = 600;
+  const gridSize = 3;
+  canvas.width = size;
+  canvas.height = size;
+  context.drawImage(selectedImage, 0, 0, size, size);
+  const maximum = Math.max(...deltas.map((value) => Math.abs(value)), 1e-5);
+  deltas.forEach((delta, index) => {
+    const x = index % gridSize;
+    const y = Math.floor(index / gridSize);
+    const x0 = (x * size) / gridSize;
+    const y0 = (y * size) / gridSize;
+    const magnitude = Math.abs(delta) / maximum;
+    context.fillStyle =
+      delta >= 0
+        ? `rgba(239, 74, 54, ${0.08 + 0.52 * magnitude})`
+        : `rgba(47, 135, 210, ${0.08 + 0.52 * magnitude})`;
+    context.fillRect(x0, y0, size / gridSize, size / gridSize);
+    context.strokeStyle = "rgba(255,255,255,.65)";
+    context.lineWidth = 2;
+    context.strokeRect(x0, y0, size / gridSize, size / gridSize);
+  });
+  canvas.classList.remove("hidden");
+  document.querySelector("#sensitivity-legend").classList.remove("hidden");
+}
+
+function resetExplainability() {
+  latestAnalysis = null;
+  document.querySelector("#evidence-panel").classList.add("hidden");
+  document.querySelector("#sensitivity-details").classList.add("hidden");
+  document.querySelector("#sensitivity-canvas").classList.add("hidden");
+  document.querySelector("#sensitivity-legend").classList.add("hidden");
+  document.querySelector("#sensitivity-status").textContent = "";
+  const button = document.querySelector("#sensitivity-button");
+  button.disabled = false;
+  button.textContent = "Generate sensitivity map";
+}
+
+async function generateSensitivityMap() {
+  if (!latestAnalysis || !selectedImage) return;
+  const button = document.querySelector("#sensitivity-button");
+  const status = document.querySelector("#sensitivity-status");
+  button.disabled = true;
+  button.textContent = "Generating map…";
+  status.textContent = "Running nine additional contour-model checks on this device…";
+  try {
+    const runtime = await loadRuntime();
+    const { metadata, baseScores } = latestAnalysis;
+    const tensor = imageToTensor(selectedImage, metadata, runtime);
+    const session = await createSession(metadata.models[0].url);
+    const deltas = [];
+    try {
+      for (let tileY = 0; tileY < 3; tileY += 1) {
+        for (let tileX = 0; tileX < 3; tileX += 1) {
+          const occluded = makeOccludedTensor(tensor, metadata, runtime, tileX, tileY);
+          const outputs = await session.run({ [metadata.inputName]: occluded });
+          const result = outputs[metadata.outputName];
+          deltas.push(baseScores[0][0] - sigmoid(result.data[0]));
+          if (typeof result.dispose === "function") result.dispose();
+        }
+      }
+    } finally {
+      await session.release();
+    }
+    drawSensitivityMap(deltas);
+    status.textContent =
+      "Map complete. Stronger color means the contour model changed more when that region was hidden.";
+  } catch (error) {
+    status.textContent = `The optional map could not run: ${error.message}`;
+  } finally {
+    button.disabled = false;
+    button.textContent = "Regenerate sensitivity map";
+  }
 }
 
 async function handleImageSelection(inputElement) {
   const [file] = inputElement.files;
   if (!file) return;
+  resetExplainability();
   if (!file.type.startsWith("image/")) {
     qualityMessage.textContent = "Choose a JPG, PNG, or WebP image.";
     return;
@@ -346,15 +553,48 @@ analyzeButton.addEventListener("click", async () => {
   analyzeButton.disabled = true;
   analyzeButton.textContent = "Loading model…";
   try {
-    const [metadata, session, runtime] = await Promise.all([loadMetadata(), loadSession(), loadRuntime()]);
-    analyzeButton.textContent = "Analyzing…";
+    const [metadata, presenceMetadata, runtime] = await Promise.all([
+      loadMetadata(),
+      loadPresenceMetadata(),
+      loadRuntime(),
+    ]);
+    analyzeButton.textContent = "Checking for a visible spot…";
+    const presenceTensor = imageToTensor(selectedImage, presenceMetadata, runtime);
+    const presenceSession = await createSession(presenceMetadata.url);
+    let presenceScore;
+    try {
+      const presenceOutputs = await presenceSession.run({
+        [presenceMetadata.inputName]: presenceTensor,
+      });
+      const presenceLogits = presenceOutputs[presenceMetadata.outputName];
+      presenceScore = sigmoid(presenceLogits.data[0]);
+      if (typeof presenceLogits.dispose === "function") presenceLogits.dispose();
+    } finally {
+      await presenceSession.release();
+    }
+    if (presenceScore < presenceMetadata.threshold) {
+      showNoVisibleSpotResult(presenceScore, presenceMetadata);
+      return;
+    }
     const tensor = imageToTensor(selectedImage, metadata, runtime);
-    const outputs = await session.run({ [metadata.inputName]: tensor });
-    const logits = outputs[metadata.outputName].data;
-    showResult(
-      { higherConcern: sigmoid(logits[0]), melanoma: sigmoid(logits[1]) },
-      metadata,
-    );
+    const baseScores = [];
+    for (let index = 0; index < metadata.models.length; index += 1) {
+      analyzeButton.textContent = `Analyzing model ${index + 1} of ${metadata.models.length}…`;
+      const session = await createSession(metadata.models[index].url);
+      try {
+        const outputs = await session.run({ [metadata.inputName]: tensor });
+        const logits = outputs[metadata.outputName].data;
+        baseScores.push([sigmoid(logits[0]), sigmoid(logits[1])]);
+        if (typeof outputs[metadata.outputName].dispose === "function") {
+          outputs[metadata.outputName].dispose();
+        }
+      } finally {
+        await session.release();
+      }
+    }
+    const fusedScores = fuseModelScores(baseScores, metadata);
+    latestAnalysis = { metadata, baseScores };
+    showResult(fusedScores, metadata, baseScores);
   } catch (error) {
     const ranOutOfMemory = /out of memory/i.test(error.message);
     qualityMessage.textContent = ranOutOfMemory
@@ -372,20 +612,21 @@ resetButton.addEventListener("click", () => {
     inputElement.value = "";
   });
   selectedImage = null;
+  resetExplainability();
   preview.removeAttribute("src");
   previewCard.classList.add("hidden");
   resultCard.classList.add("hidden");
   window.scrollTo({ top: 0, behavior: "smooth" });
 });
 
+document.querySelector("#sensitivity-button").addEventListener("click", generateSensitivityMap);
+
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => navigator.serviceWorker.register("/service-worker.js"));
 }
 
 window.addEventListener("load", () => {
-  const preload = () => loadSession().catch(() => {
-    sessionPromise = null;
-  });
+  const preload = () => Promise.all([loadMetadata(), loadRuntime()]).catch(() => {});
   if ("requestIdleCallback" in window) window.requestIdleCallback(preload, { timeout: 1500 });
   else window.setTimeout(preload, 500);
 });

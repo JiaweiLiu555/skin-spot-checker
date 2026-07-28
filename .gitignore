@@ -11,6 +11,8 @@ web/dist/
 # Large or generated artifacts
 data/*
 models/**/*.pt
+models/experiments/v14_*
+reports/experiments/v14_*
 models/**/*.pth
 reports/**/*.csv
 reports/**/*.png

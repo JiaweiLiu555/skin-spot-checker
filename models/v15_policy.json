@@ -1,0 +1,32 @@
+{
+  "version": "1.5",
+  "base_ensemble": "models/v14_ensemble.json",
+  "selection_data": "reports/experiments/v14_release_validation/predictions.csv",
+  "test_labels_used_for_selection": false,
+  "threshold_selection": {
+    "minimum_overall_sensitivity": 0.90,
+    "minimum_melanoma_sensitivity": 0.95,
+    "objective": "maximize specificity, then balanced accuracy",
+    "higher_concern": 0.4477158209314168,
+    "melanoma": 0.0045387894
+  },
+  "reader_facing_score": {
+    "source": "rank-fused higher-concern ensemble output only",
+    "formula": "round(1 + 9 * score^1.7)",
+    "range": [1, 10],
+    "is_cancer_probability": false,
+    "melanoma_safety_head_inflates_score": false
+  },
+  "lesion_presence_gate": {
+    "threshold": 0.12,
+    "features": [
+      "standardized center-versus-border RGB difference",
+      "standardized center-versus-border luminance difference",
+      "raw center-versus-border color distance"
+    ],
+    "validation_lesion_pass_rate": 0.9882869692532943,
+    "clinical_development_lesion_pass_rate": 0.9790076335877863,
+    "phone_development_lesion_pass_rate": 0.9849246231155779,
+    "limitation": "No true normal-skin dataset was available; synthetic corner crops were used only as a development sanity check."
+  }
+}

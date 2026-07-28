@@ -4,6 +4,10 @@ An educational computer-vision project that analyzes a **clinical close-up image
 
 > **Important:** This project is not a medical device and cannot diagnose or rule out cancer. A real diagnosis requires evaluation by a qualified clinician and may require a biopsy. Do not use the result to make medical decisions.
 
+The current PWA is **Mega Version 2.0**. It keeps the verified Version 1.6
+input gate and Version 1.5 concern ensemble, and adds a real model-evidence
+graph plus an optional contour-CNN occlusion-sensitivity map.
+
 ## Included applications
 
 1. `app.py`: a Python/Streamlit research interface.
@@ -11,12 +15,18 @@ An educational computer-vision project that analyzes a **clinical close-up image
 
 ## Model and data
 
-- Architecture: contour-aware MobileNetV3-Large CNN with ImageNet transfer learning
-- Image streams: RGB features plus fixed-Sobel contours encoded by a small learned CNN
-- Training source: MILK10k clinical close-ups plus patient-separated PAD-UFES-20 phone photos
+- Architecture: Version 1.6 three-member on-device concern ensemble preceded
+  by a learned MobileNetV3-Small visible-lesion gate
+- Members: contour-aware MobileNetV3-Large, a clinical EfficientNet-B0, and a clinical-plus-phone EfficientNet-B0
+- Fusion: validation-rank transform plus regularized logistic regression, with a preserved dedicated melanoma safety head
+- Concern-model training source: MILK10k clinical close-ups plus
+  patient-separated PAD-UFES-20 phone photos
+- Input-gate training source: participant-labeled SCIN phone images,
+  PAD-UFES-20 phone lesions, and sampled SLICE-3D lesion crops
 - Input: 224 × 224 RGB image
 - Outputs: a general higher-concern score plus a dedicated melanoma-pattern score
-- Decision policy: jointly selected validation thresholds; every image that passes the basic quality checks receives a screening flag
+- Decision policy: jointly selected validation thresholds; the 1–10 display is
+  separated from the conservative melanoma safety flag
 - Split: lesion-level stratified 80% training / 10% validation / 10% test
 - Higher-concern labels: AKIEC, BCC, MAL_OTH, MEL, SCCKA
 - Lower-concern labels: BEN_OTH, BKL, DF, INF, NV, VASC
@@ -107,24 +117,27 @@ The in-domain MILK10k test is not evidence of phone readiness. Version 2 adds a 
 
 ## Verified results
 
-Version 1.3 adds a Sobel-contour CNN branch, phone-domain fine-tuning,
-camera/lighting augmentation, capped skin-tone-aware sampling, and a
-validation-selected operating point. ROC-AUC is the higher-concern head’s
-threshold-free ranking metric.
+Version 1.4 added two complementary EfficientNet-B0 RGB members and a small
+rank-logistic fusion layer. One RGB member was retrained on the combined
+MILK10k and patient-separated PAD-UFES-20 development data. The dedicated
+contour-model melanoma head remains the melanoma safety channel. ROC-AUC is the
+higher-concern output’s threshold-free ranking metric.
 
 | Evaluation | n | Accuracy | Sensitivity | Specificity | Balanced accuracy | ROC-AUC | Melanoma sensitivity |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| MILK10k in-domain test | 524 | 72.1% | 98.1% | 6.7% | 52.4% | 0.791 | 100.0% (45/45) |
-| PAD-UFES-20 patient-separated phone test | 199 | 74.4% | 91.9% | 36.5% | 64.2% | 0.855 | 100.0% (4/4) |
+| MILK10k clinical development test | 524 | 71.9% | 97.9% | 6.7% | 52.3% | 0.809 | 100.0% (45/45) |
+| PAD-UFES-20 patient-separated phone development test | 199 | 75.4% | 92.6% | 38.1% | 65.4% | 0.858 | 100.0% (4/4) |
 
-Confusion matrices are TN/FP/FN/TP = 10/139/7/368 in-domain and
-23/40/11/125 on the phone test. Compared with Version 1.2 on the same phone
-test, Version 1.3 improves accuracy (72.4% → 74.4%), balanced accuracy
-(60.2% → 64.2%), specificity (27.0% → 36.5%), and ROC-AUC (0.830 → 0.855),
-while sensitivity falls from 93.4% to 91.9%. The phone melanoma subgroup is
-only n=4, so 4/4 is not a stable claim.
+Confusion matrices are TN/FP/FN/TP = 10/139/8/367 on the clinical development
+test and 24/39/10/126 on the phone development test. Compared with Version 1.3,
+Version 1.4 improves every reported phone headline metric and preserves 4/4
+melanoma flags. The phone melanoma subgroup is only n=4, so 4/4 is not a stable
+claim. The clinical thresholded operating point is effectively flat while
+clinical ROC-AUC improves from 0.791 to 0.809.
 
-The reports include 500-resample bootstrap intervals. Only one final training seed was run, so these intervals describe evaluation-sample uncertainty, not training-run variability. Repeated-seed training remains future work and must never reuse a test set for checkpoint or threshold selection.
+The v1.4 development tests were reused while comparing release policies. They
+must not be described as one-shot independent validation. Only one new RGB
+training seed was completed, so training-run variability remains unknown.
 
 ### Important score interpretation
 
@@ -132,24 +145,63 @@ The model's raw sigmoid outputs are **not cancer probabilities**. The PWA shows 
 
 The July 22 Version 1 audit rejected several candidates with leakage or poor
 operating points. Version 1.2 then added patient-separated phone-domain
-training. Version 1.3 adds the contour and skin-tone robustness experiment.
-See `reports/accuracy_upgrade_v2_2026-07-22.md` and
-`reports/contour_fairness_upgrade_v13_2026-07-23.md`.
+training. Version 1.4 adds the ensemble experiment and browser verification.
+See `reports/ensemble_upgrade_v14_2026-07-27.md`.
+
+Version 1.5 corrects the misleading score behavior seen when normal skin or an
+ordinary mole received 7–9/10. It adds a conservative visible-spot gate,
+raises the validation-selected decision thresholds, and computes the 1–10
+display from fused ensemble evidence only. Phone development specificity rises
+from 38.1% to 46.0%, while sensitivity falls from 92.6% to 86.8%. See
+`reports/v15_specificity_and_scoring_2026-07-27.md`.
+
+Version 1.6 replaces the hand-built normal-skin check with a learned
+MobileNetV3-Small input-routing model. On a case/patient-separated validation
+set (n=475), it reached 95.5% visible-lesion sensitivity, 95.0% specificity,
+95.3% balanced accuracy, and ROC-AUC 0.979. “Looks healthy” SCIN labels are
+participant annotations rather than pathology-confirmed normal skin, so these
+numbers measure the routing task only. A new SLICE-3D-trained concern model was
+also tested, but it did not improve the locked phone-photo ensemble AUC and was
+not deployed. See `reports/v16_learned_input_gate_2026-07-28.md`.
+
+Mega Version 2.0 was informed by a code audit of a supplied DermaScope
+prototype. DermaScope’s graph and attention presentation were useful design
+ideas, but its six named “models” are documented feature-based analogues with
+no trained CNN/transformer weights, and its 0.949 ROC curve is generated from
+published benchmark AUCs. Mega therefore does not reuse its classifier or
+claim that AUC. The new evidence graph uses this app’s actual model outputs,
+and the optional map runs nine additional occlusion checks through the real
+contour CNN. See `reports/mega_app_dermascope_audit_2026-07-28.md`.
 
 ## Export for the iPhone web app
 
 ```bash
-python scripts/export_onnx.py \
-  --checkpoint models/skin_lesion_mobilenet_v3.pt \
-  --output web/public/model/skin-lesion-classifier.onnx
+python scripts/export_v14_ensemble.py \
+  --clinical-efficientnet-checkpoint models/experiments/efficientnet_b0_seed2026.pt \
+  --efficientnet-checkpoint models/experiments/v14_efficientnet_b0_combined_seed2042.pt \
+  --ensemble models/v14_ensemble.json
 ```
 
-The export replaces `HardSwish` and `HardSigmoid` with equivalent basic ONNX
-operations so iPhone/iPad Safari can use the lower-memory WebGL runtime. The PWA
-also downsizes a temporary browser-only working copy of large phone photos before
-inference; the original photo is never uploaded.
+The export replaces unsupported activations with equivalent basic ONNX
+operations. The PWA runs the three members sequentially and releases each
+session before loading the next, so iPhone/iPad Safari avoids holding all model
+graphs in memory at once. It also downsizes a temporary browser-only working
+copy of large phone photos; the original photo is never uploaded.
+
+The default runtime is single-threaded WASM. WebGL remains available with
+`?runtime=webgl` for troubleshooting, but is not the default because the
+three-member graph compilation stalled in a deployed browser test.
 
 The exporter compares PyTorch and ONNX outputs and fails if they differ beyond tolerance.
+
+The v1.6 gate is exported separately and run first:
+
+```bash
+python scripts/export_lesion_presence.py \
+  --checkpoint models/experiments/v16_lesion_presence_seed2052.pt \
+  --output web/public/model/lesion-presence-mobilenet-v3-small.onnx \
+  --metadata-output web/public/model/lesion-presence-metadata.json
+```
 
 ## Run the Netlify app locally
 
@@ -189,7 +241,7 @@ Do not say: “The app diagnoses skin cancer from any phone photo.”
 - A one-head baseline’s 45.5% melanoma sensitivity showed how headline accuracy/AUC can hide a dangerous subtype failure. The final architecture therefore preserves a dedicated melanoma head and reports melanoma sensitivity separately.
 - The app checks basic brightness/detail/framing and requires a retake for unusable images. A technically usable image near the model cutoff is conservatively routed to “review recommended.”
 - Skin-tone results always include sample sizes and are labeled **fairness not established**. Small or missing groups cannot prove absence of bias.
-- Version 1.3 uses capped tone-aware sampling and a contour stream, inspired by
+- Version 1.4 retains capped tone-aware sampling and a contour stream, inspired by
   recent RGB-plus-structure research. This is a robustness experiment, not proof
   that darker-skin bias has been solved.
 - No general-purpose vision-language model is used to describe or diagnose lesions.
