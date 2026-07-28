@@ -128,10 +128,22 @@ const resetButton = document.querySelector("#reset-button");
 let selectedImage = null;
 let metadataPromise = null;
 let presenceMetadataPromise = null;
+let compactEnsemblePromise = null;
 let runtimePromise = null;
 let latestAnalysis = null;
 
-const useWebGl = new URLSearchParams(window.location.search).get("runtime") === "webgl";
+const queryParameters = new URLSearchParams(window.location.search);
+const isIOS =
+  /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+  (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+const requestedMode = queryParameters.get("mode");
+const inferenceMode =
+  requestedMode === "full" || requestedMode === "lite" || requestedMode === "minimal"
+    ? requestedMode
+    : isIOS
+      ? "minimal"
+      : "full";
+const useWebGl = queryParameters.get("runtime") === "webgl";
 
 function loadRuntime() {
   if (!runtimePromise) {
@@ -147,7 +159,7 @@ function loadRuntime() {
 }
 
 function loadMetadata() {
-  metadataPromise ??= fetch("/model/model-metadata.json?v=1.6.0-release-1", { cache: "no-store" }).then((response) => {
+  metadataPromise ??= fetch("/model/model-metadata.json?v=2.0.1-memory-fix", { cache: "no-store" }).then((response) => {
     if (!response.ok) throw new Error("Model metadata is unavailable.");
     return response.json();
   });
@@ -162,6 +174,45 @@ function loadPresenceMetadata() {
     return response.json();
   });
   return presenceMetadataPromise;
+}
+
+function loadCompactEnsemble() {
+  if (inferenceMode === "full") return Promise.resolve(null);
+  const filename =
+    inferenceMode === "lite" ? "mega-lite-ensemble.json" : "mega-minimal-ensemble.json";
+  compactEnsemblePromise ??= fetch(`/model/${filename}?v=2.0.1-memory-fix`, {
+    cache: "no-store",
+  }).then((response) => {
+    if (!response.ok) throw new Error("Memory-safe model policy is unavailable.");
+    return response.json();
+  });
+  return compactEnsemblePromise;
+}
+
+function modelLabel(model) {
+  const labels = {
+    contour_mobilenet_v3: "Contour + shape CNN",
+    efficientnet_b0_clinical: "Clinical RGB CNN",
+    efficientnet_b0_clinical_phone: "Phone-aware RGB CNN",
+  };
+  return labels[model.name] ?? model.name;
+}
+
+function effectiveMetadata(metadata, compactEnsemble) {
+  if (!compactEnsemble) return { ...metadata, runtimeMode: "Full three-model ensemble" };
+  const names = new Set(compactEnsemble.base_models);
+  const models = metadata.models.filter((model) => names.has(model.name));
+  return {
+    ...metadata,
+    models,
+    fusion: { ...metadata.fusion, heads: compactEnsemble.heads },
+    thresholds: compactEnsemble.thresholds,
+    decisionPolicy: { melanomaModelIndex: 0 },
+    runtimeMode:
+      inferenceMode === "lite"
+        ? "Memory-safe two-model ensemble"
+        : "iPhone presentation mode · contour CNN",
+  };
 }
 
 async function createSession(modelUrl) {
@@ -317,13 +368,14 @@ function fuseModelScores(baseScores, metadata) {
 function renderEvidenceGraph(baseScores, fusedScores, metadata) {
   const panel = document.querySelector("#evidence-panel");
   const bars = document.querySelector("#evidence-bars");
-  const labels = ["Contour + shape CNN", "Clinical RGB CNN", "Phone-aware RGB CNN"];
   const referenceSets = metadata.fusion.heads.higher_concern.rank_references;
   const entries = baseScores.map((scores, index) => ({
-    label: labels[index] ?? metadata.models[index].name,
+    label: modelLabel(metadata.models[index]),
     value: empiricalRank(scores[0], referenceSets[index]),
   }));
-  entries.push({ label: "Fused ensemble evidence", value: fusedScores.higherConcern });
+  if (baseScores.length > 1) {
+    entries.push({ label: "Fused ensemble evidence", value: fusedScores.higherConcern });
+  }
   bars.innerHTML = entries
     .map(
       ({ label, value }, index) => `
@@ -350,6 +402,9 @@ function showResult(scores, metadata, baseScores) {
   document.querySelector(".concern-score").classList.remove("hidden");
   document.querySelector(".decision-row").classList.remove("hidden");
   document.querySelector(".score-warning").classList.remove("hidden");
+  document.querySelector(".score-warning").innerHTML =
+    `<strong>The 1–10 score is not a cancer probability.</strong> ` +
+    `It summarizes evidence from ${metadata.runtimeMode}.`;
   document.querySelector(".technical-details").classList.remove("hidden");
   const decision = screeningDecision(scores, metadata.thresholds);
   const decisionMargin = Math.max(
@@ -376,7 +431,7 @@ function showResult(scores, metadata, baseScores) {
     : reviewRecommended
       ? decision.melanomaSafetyFlag && !decision.higherConcernFlag
         ? "The dedicated melanoma-pattern safety head crossed its conservative cutoff even though overall ensemble evidence was lower. This is a follow-up flag, not a cancer probability."
-        : "The fused ensemble output crossed the review cutoff. The 1–10 score describes model evidence and is not the chance of cancer."
+        : "The validated model output crossed the review cutoff. The 1–10 score describes model evidence and is not the chance of cancer."
       : "The model did not cross either review cutoff. False negatives occurred in testing, so this result must not reassure you about a known, changing, or concerning spot.";
   document.querySelector("#decision-value").textContent = nearCutoff
     ? "Near cutoff—flagged"
@@ -386,6 +441,7 @@ function showResult(scores, metadata, baseScores) {
   document.querySelector("#concern-score-value").textContent = concernScore;
   document.querySelector("#score-fill").style.width = `${((concernScore - 1) / 9) * 100}%`;
   document.querySelector("#threshold-note").textContent =
+    `${metadata.runtimeMode}. ` +
     `Higher-concern model output ${(scores.higherConcern * 100).toFixed(1)}% ` +
     `(threshold ${(metadata.thresholds.higher_concern * 100).toFixed(1)}%); ` +
     `melanoma-pattern model output ${(scores.melanoma * 100).toFixed(1)}% ` +
@@ -553,28 +609,32 @@ analyzeButton.addEventListener("click", async () => {
   analyzeButton.disabled = true;
   analyzeButton.textContent = "Loading model…";
   try {
-    const [metadata, presenceMetadata, runtime] = await Promise.all([
+    const [sourceMetadata, compactEnsemble, runtime] = await Promise.all([
       loadMetadata(),
-      loadPresenceMetadata(),
+      loadCompactEnsemble(),
       loadRuntime(),
     ]);
-    analyzeButton.textContent = "Checking for a visible spot…";
-    const presenceTensor = imageToTensor(selectedImage, presenceMetadata, runtime);
-    const presenceSession = await createSession(presenceMetadata.url);
-    let presenceScore;
-    try {
-      const presenceOutputs = await presenceSession.run({
-        [presenceMetadata.inputName]: presenceTensor,
-      });
-      const presenceLogits = presenceOutputs[presenceMetadata.outputName];
-      presenceScore = sigmoid(presenceLogits.data[0]);
-      if (typeof presenceLogits.dispose === "function") presenceLogits.dispose();
-    } finally {
-      await presenceSession.release();
-    }
-    if (presenceScore < presenceMetadata.threshold) {
-      showNoVisibleSpotResult(presenceScore, presenceMetadata);
-      return;
+    const metadata = effectiveMetadata(sourceMetadata, compactEnsemble);
+    if (inferenceMode === "full") {
+      const presenceMetadata = await loadPresenceMetadata();
+      analyzeButton.textContent = "Checking for a visible spot…";
+      const presenceTensor = imageToTensor(selectedImage, presenceMetadata, runtime);
+      const presenceSession = await createSession(presenceMetadata.url);
+      let presenceScore;
+      try {
+        const presenceOutputs = await presenceSession.run({
+          [presenceMetadata.inputName]: presenceTensor,
+        });
+        const presenceLogits = presenceOutputs[presenceMetadata.outputName];
+        presenceScore = sigmoid(presenceLogits.data[0]);
+        if (typeof presenceLogits.dispose === "function") presenceLogits.dispose();
+      } finally {
+        await presenceSession.release();
+      }
+      if (presenceScore < presenceMetadata.threshold) {
+        showNoVisibleSpotResult(presenceScore, presenceMetadata);
+        return;
+      }
     }
     const tensor = imageToTensor(selectedImage, metadata, runtime);
     const baseScores = [];
@@ -598,7 +658,7 @@ analyzeButton.addEventListener("click", async () => {
   } catch (error) {
     const ranOutOfMemory = /out of memory/i.test(error.message);
     qualityMessage.textContent = ranOutOfMemory
-      ? "This device needs more free memory. Close other Safari tabs, reopen the app, and try again."
+      ? "The memory-safe model could not start. Reload this page once so Safari releases the previous model."
       : `The model could not run: ${error.message}`;
     qualityMessage.className = "quality-bad";
   } finally {

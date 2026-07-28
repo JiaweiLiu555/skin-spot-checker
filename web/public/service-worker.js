@@ -1,4 +1,4 @@
-const CACHE = "ai4all-skin-spot-checker-mega-v20-1";
+const CACHE = "ai4all-skin-spot-checker-mega-v20-2-memory-fix";
 const SHELL = ["/", "/manifest.webmanifest", "/icon.svg"];
 
 self.addEventListener("install", (event) => {
@@ -18,7 +18,9 @@ self.addEventListener("fetch", (event) => {
   const requestUrl = new URL(event.request.url);
   if (
     requestUrl.pathname === "/model/model-metadata.json" ||
-    requestUrl.pathname === "/model/lesion-presence-metadata.json"
+    requestUrl.pathname === "/model/lesion-presence-metadata.json" ||
+    requestUrl.pathname === "/model/mega-lite-ensemble.json" ||
+    requestUrl.pathname === "/model/mega-minimal-ensemble.json"
   ) {
     event.respondWith(
       fetch(event.request)

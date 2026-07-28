@@ -173,6 +173,23 @@ claim that AUC. The new evidence graph uses this app’s actual model outputs,
 and the optional map runs nine additional occlusion checks through the real
 contour CNN. See `reports/mega_app_dermascope_audit_2026-07-28.md`.
 
+### iPhone memory-safe presentation mode
+
+Safari on some iPhones exhausted its WebAssembly heap after loading the input
+gate plus three concern models. Mega now automatically uses the validated
+contour-aware CNN by itself on iPhone/iPad, skipping the separate learned gate
+and redundant RGB members. The lightweight image-quality and centered-spot
+checks still run before inference. Macs and desktop browsers retain the full
+path.
+
+On the patient-separated PAD-UFES-20 phone development test, this mode reached
+91.9% sensitivity, 36.5% specificity, balanced accuracy 64.2%, ROC-AUC 0.855,
+and flagged 4/4 melanoma images. The melanoma subgroup is too small for a
+stable claim. The full ensemble’s comparison AUC was 0.864.
+
+For debugging, `?mode=minimal`, `?mode=lite`, and `?mode=full` explicitly
+select the one-, two-, or full-model path.
+
 ## Export for the iPhone web app
 
 ```bash
